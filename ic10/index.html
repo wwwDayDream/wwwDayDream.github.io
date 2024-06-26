@@ -2,18 +2,18 @@
 <html lang="en" >
 <head>
   <meta charset="UTF-8">
-  <title>CodePen - Better Editor</title>
+  <title>Stationeers - IC10 Editor</title>
   <link rel='stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/codemirror/5.13.4/codemirror.css'>
-<link rel='stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/codemirror/5.13.4/theme/material.css'><link rel="stylesheet" href="./style.css">
-
+  <link rel='stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/codemirror/5.13.4/theme/material.css'>
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
 <!-- partial:index.partial.html -->
-<div class="container">
 	<!-- button to copy the editor -->
-	<div class="copy-code-wrap">
-		<div class="copy-code"></div>
-	</div>
+<div class="copy-code-wrap">
+  <div class="copy-code"></div>
+</div>
+<div class="container">
   <div class="code-container">
     <textarea id="code">
 keep space
@@ -29,8 +29,12 @@ keep labels
   </div>
 </div>
 <!-- partial -->
-  <script src='//cdnjs.cloudflare.com/ajax/libs/codemirror/5.13.4/codemirror.js'></script>
-<script src='https://codemirror.net/5/addon/mode/simple.js'></script><script  src="./script.js"></script>
-
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.13.4/codemirror.js'></script>
+  <script src='https://codemirror.net/5/addon/mode/simple.js'></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moo/0.5.2/moo.js"></script>
+  <script  src="./ic10.js"></script>
+  <script  src="./script.js"></script>
 </body>
 </html>
