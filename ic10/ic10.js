@@ -1,7 +1,7 @@
 const UpdateReady = {
     CONSTANTS: [ 'nan','pinf','ninf','pi','deg2rad','rad2deg','epsilon' ],
-    BATCHMODES: [ 'Average','Sum','Minimum','Maximum','0','1','2','3' ],
-    REAGENTMODES: [ 'Contents','Required','Recipe','0','1','2' ],
+    BATCHMODES: [ 'Average','Sum','Minimum','Maximum' ],
+    REAGENTMODES: [ 'Contents','Required','Recipe' ],
     STATEMENTS: [
         {ident: 'abs', 
                     args: [ ['r?'], ['r?','num'] ]},
@@ -290,214 +290,243 @@ const UpdateReady = {
     ]
 }
 
-
-let lexer = moo.compile({
-    WS:      /[ \t]+/,
-    comment: /\/\/.*?$/,
-    number:  /0|[1-9][0-9]*/,
-    string:  /"(?:\\["\\]|[^\n"\\])*"/,
-    lparen:  '(',
-    rparen:  ')',
-    keyword: ['while', 'if', 'else', 'moo', 'cows'],
-    NL:      { match: /\n/, lineBreaks: true },
-  })
 // @ts-check
-const ElementTypes = { Regex: 'r', Element: 'e'}
-const IC10 = {
-    // `r` gets parsed as a regex
-    // `e` gets addressed by the content
-    elementAliases: { 'r?': 'regs', 'd?': 'devs', 'logicType': 'str', 'logicSlotType': 'str' },
-    elements: {
-        str: [
-            { id: 'Raw', 
-                type: ElementTypes.Regex, content: /^([A-Za-z0-9.]+)$/ }
-        ],
-        regs: [
-            { id: 'RegisterConstant', 
-                type: ElementTypes.Regex, content: /^r(1[0-5]|[0-9]|a)$/ },
-            { id: 'RegisterAlias', 
-                type: ElementTypes.Element, content: 'str' }
-        ],
-        devs: [
-            { id: 'DeviceConstant',
-                type: ElementTypes.Regex, content: /^d([0-5]|b)$/ },
-            { id: 'DeviceAlias', 
-                type: ElementTypes.Element, content: 'str' }
-        ],
-        num: [
-            { id: 'NumberConstantHash', 
-                type: ElementTypes.Regex, content: /^((?:HASH\((?='.*'\))))$/},
-            { id: 'NumberConstantDec', 
-                type: ElementTypes.Regex, content: /^([-]?(?:[0-9]+[.][0-9]+))$/ },
-            { id: 'NumberConstantPreDefined', 
-                type: ElementTypes.Regex, content: new RegExp(`^(${UpdateReady.CONSTANTS.join('|')})$`, 'i') },
-            { id: 'NumberConstantDefine', 
-                type: ElementTypes.Element, content: 'str' },
-            { id: 'NumberConstantInt', 
-                type: ElementTypes.Element, content: 'int' }
-        ],
-        int: [
-            { id: 'IntConstantHex', 
-                type: ElementTypes.Regex, content: /^\$((?:(?:_(?=_*(?:[0-9]|[A-F]|[a-f])))|(?:[0-9]|[A-F]|[a-f]))(?:[0-9]|[A-F]|[a-f]|_)*)$/ },
-            { id: 'IntConstantBinary', 
-                type: ElementTypes.Regex, content: /^%((?:(?:_(?=_*[01]))|(?:[01]))[01_]*)$/ },
-            { id: 'IntConstantDec', 
-                type: ElementTypes.Regex, content: /^([-]?[0-9]+)$/ },
-            { id: 'IntConstantLabel', 
-                type: ElementTypes.Element, content: 'str' }
-        ],
-        batchMode: [
-            { id: 'BatchModeConstant', 
-                type: ElementTypes.Regex, content: new RegExp(`^(${UpdateReady.BATCHMODES.join('|')})$`) }
-        ],
-        reagentMode: [
-            { id: 'ReagentModeConstant', 
-                type: ElementTypes.Regex, content: new RegExp(`^(${UpdateReady.REAGENTMODES.join('|')})$`) }
-        ],
-        label: [
-            { id: 'LabelEntry',
-                type: ElementTypes.Regex, content: /^([A-Za-z0-9.]+):$/ }
-        ]
-    },
-    LoopElements(callback) {
-        for (const key of Object.keys(this.elements)) {
-            const element = this.elements[key]
-            callback(key, element);
-        }
-    },
-    state: {
-        current: '',
-        resetAfterToken: () => {
-            this.current = '';
-        }
-    },
-    ParseASTByChar(ch, nextCh) {
-        if (ch != null)
-            this.state.current = this.state.current + ch;
-
-        const ret = ((char, nextChar, state) => {
-            if (state.in === 'sol' && char === ' ' && nextChar !== ' ') return 'Spaces';
-    
-            if (char === '#') {
-                state.in = 'comment';
-            }
-    
-            if (state.in === 'sol' && char !== ' ') state.in = 'reading';
-            
-            if (state.in === 'reading' && (nextChar === ' ' || nextChar == null)) {
-                const trimmedCurrent = state.current.trim();
-                for (const statement of UpdateReady.STATEMENTS) {
-                    if (trimmedCurrent === statement.ident) {
-                        state.statement = statement;
-                        state.in = 'statement';
-                        return 'Statement';
-                    }
-                }
-                if (trimmedCurrent.endsWith(':')) {
-                    state.in = 'term';
-                    return 'LabelEntry';
-                }
-                state.in = 'term';
-                return 'Invalid';
-            }
-    
-            if (state.in === 'statement') {
-                if (char === ' ' && nextChar !== ' ') {
-                    state.in = 'arg';
-                    return 'ArgStart';
-                }
-            }
-    
-            if (state.in === 'arg') {
-                if (char !== ' ' && (nextChar === ' ' || nextChar == null || nextChar === ',')) {
-                    const trimmedCurrent = state.current.trim();
-                    let matchedElement = null;
-    
-                    this.LoopElements((key, elements) => {
-                        for (const element of elements) {
-                            if (element.type === ElementTypes.Regex && element.content.test(trimmedCurrent)) {
-                                matchedElement = key;
-                                break;
-                            } else if (element.type === ElementTypes.Element && this.elementAliases[element.content] === key) {
-                                matchedElement = key;
-                                break;
-                            }
-                        }
-                    });
-    
-                    if (matchedElement) {
-                        state.in = nextChar === ',' ? 'arg' : 'statement';
-                        return `Arg(${matchedElement})`;
-                    } else {
-                        state.in = 'invalid';
-                        return 'InvalidArg';
-                    }
-                }
-            }
-
-            // End of Line
-            if (char == null) {
-                var lastMinuteReturns = null;
-                if (state.in == 'comment' && state.current.length > 0) 
-                    lastMinuteReturns = 'Comment';
-                state.in = 'sol';
-                state.current = '';
-                return lastMinuteReturns;
-            }
-            if (nextChar == '#' && state.current.length != 0) {
-                return 'Invalid';
-            }
-            if (char == null) {
-            }
-            return null;
-        })(ch, nextCh, this.state);
-        if (ret != null) {
-            this.state.resetAfterToken();
-        }
-        return ret;
+class Token {
+    constructor(TOKEN, DATA, LINE) {
+        this.ID = `TT_${TOKEN}`;
+        this.DATA = DATA;
+        this.LINE = LINE;
     }
-};
+    toString() {
+        return JSON.stringify(this);
+    }
+}
 
+// Extension Function
+RegExp.prototype.matchesAll = function(target) {
+    const match = this.exec(target);
+    return match != null && match[0] == target;
+}
 
+class IC10Lexer {
+    REGEX = {
+        REGISTERS: /r(1[0-5]|[0-9]|a)/,
+        DEVICES: /d(\d+|b)/,
+        NUM_CONST: new RegExp(`^(${UpdateReady.CONSTANTS.join('|')})$`, 'i'),
+        NUM_DEC: /([-]?(?:[0-9]+[.][0-9]+))/,
+        NUM_HASH: /(".+")/,
+        INT_DEC: /([-]?[0-9]+)/,
+        INT_HEX: /\$((?:(?:_(?=_*(?:[0-9]|[A-F]|[a-f])))|(?:[0-9]|[A-F]|[a-f]))(?:[0-9]|[A-F]|[a-f]|_)*)/,
+        INT_BIN: /%((?:(?:_(?=_*[01]))|(?:[01]))[01_]*)/,
+        BATCH_MODE: new RegExp(`^(${UpdateReady.BATCHMODES.join('|')})$`),
+        REAG_MODE: new RegExp(`^(${UpdateReady.REAGENTMODES.join('|')})$`),
+        ALIAS: /([A-Za-z0-9.]+)/
+    }
+    STATES = {
+        EOL: function() {
+            if (this.eol)
+                this.yield('UNKNOWN');
+        },
+        ARG: function() {
+            if (this.char == ' ') {
+                this.transition('SPACES')
+            } else if (this.char == '#') {
+                this.transition('COMMENT');
+            } else if (this.current == 'HASH(') {
+                this.transition('HASH');
+            } else if (this.nextChar == ' ' || this.nextChar == '#' || this.eol)
+            {
+                if (this.REGEX.REGISTERS.matchesAll(this.current))
+                    this.yield('REGISTER');
+                else if (this.REGEX.DEVICES.matchesAll(this.current))
+                    this.yield('DEVICE');
+                else if (this.REGEX.NUM_CONST.matchesAll(this.current))
+                    this.yield('NUM_CONST');
+                else if (this.REGEX.NUM_DEC.matchesAll(this.current))
+                    this.yield('NUM_DEC');
+                else if (this.REGEX.INT_DEC.matchesAll(this.current))
+                    this.yield('INT_DEC');
+                else if (this.REGEX.INT_HEX.matchesAll(this.current))
+                    this.yield('INT_HEX');
+                else if (this.REGEX.INT_BIN.matchesAll(this.current))
+                    this.yield('INT_BIN');
+                else if (this.REGEX.BATCH_MODE.matchesAll(this.current))
+                    this.yield('BATCH_MODE');
+                else if (this.REGEX.REAG_MODE.matchesAll(this.current))
+                    this.yield('REAG_MODE');
+                else if (this.REGEX.ALIAS.matchesAll(this.current))
+                    this.yield('ALIAS');
+                else
+                    this.yieldAndTransition('MALFORMED', 'ARG');
+            }
+        },
+        STATEMENT: function() {
+            if (this.nextChar == ':')
+                this.yieldAndTransition('LABEL', 'EOL');
+            if (this.nextChar == ' ' || this.eol)
+                this.yieldAndTransition('INSTRUCTION', 'ARG');
+        },
+        HASH: function() {
+            if (this.current == 'HASH(')
+                this.yield('HASH_OPEN');
+            else if (this.REGEX.NUM_HASH.matchesAll(this.current))
+                this.yield('HASH_STRING');
+            else if (this.current == ')')
+                this.yieldAndTransition('HASH_CLOSE', 'ARG');
+            else if (this.eol || this.nextChar == '#' || this.nextChar == ')')
+                this.yield('UNKNOWN');
+        },
+        COMMENT: function() {
+            if (this.eol)
+                this.yield('COMMENT');
+        },
+        SPACES: function() {
+            if (this.char == ' ')
+                this.yield('SPACE');
+            else
+                this.transition(this.lastState);
+        },
+        SOL: function() {
+            switch (this.char) {
+                case ' ':
+                    this.transition('SPACES');
+                    break;
+                case '#':
+                    this.transition('COMMENT');
+                    break;
+                default:
+                    this.transition('STATEMENT');
+                    break;
+            }
+        }
+    }
+    constructor() {
+        this.line = 0;
+        this.charPostProcessor();
+    }
+  
+    yield(tokenID) {
+        this.token = new Token(tokenID, this.current, this.line);
+        this.current = '';
+    }
+    yieldAndTransition(tokenID, newState, transitionData) {
+        this.yield(tokenID);
+        this.transition(newState, transitionData);
+        this.transitioned = false;
+    }
+    transition(newState, transitionData) {
+        this.transitioned = true;
+        this.lastState = this.currentState;
+        this.currentState = newState;
+        this.state = this.STATES[this.currentState];
+        this.stateData = transitionData;
+    }
+
+    eatChar(char, nextChar) {
+        this.charPreProcessor(char, nextChar);
+
+        this.transitioned = true;
+        do {
+            this.transitioned = false;
+            this.state();
+        } while (this.transitioned)
+        this.charPostProcessor();
+        return this.token;
+    }
+
+    charPreProcessor(char, nextChar) {
+        this.char = char;
+        this.nextChar = nextChar;
+        this.lastToken = this.token;
+        this.token = null;
+        if (this.nextChar == null)
+            this.eol = true;
+        if (char != null)
+            this.current += char;
+        if (this.current.length == 2)
+            this.sol = false;
+    }
+    charPostProcessor() {
+        this.lastChar = this.char;
+        if (this.nextChar == null) {
+            this.current = '';
+            this.stateInfo = {};
+            this.eol = false;
+            this.sol = true;
+            this.line++;
+            this.lastChar = null;
+            this.transition('SOL');
+        }
+    }
+}
 
 // @ts-ignore
 CodeMirror.defineMode('ic10', function() {
     const tokenTypes = {
-        Spaces: null,
-        Raw: null,
-        Invalid: 'error',
-        Comment: 'comment',
-        Statement: 'variable',
-        RegisterConstant: 'keyword',
-        RegisterAlias: 'string',
-        DeviceConstant: 'keyword',
-        DeviceAlias: 'string',
-        NumberConstantHash: 'comment',
-        NumberConstantDec: 'number',
-        NumberConstantPreDefined: 'variable-3',
-        NumberConstantDefine: 'string',
-        NumberConstantInt: 'number',
-        IntConstantHex: 'number',
-        IntConstantBinary: 'number',
-        IntConstantDec: 'number',
-        IntConstantLabel: 'variable-2',
-        BatchModeConstant: 'variable-3',
-        ReagentModeConstant: 'variable-3',
-        LabelEntry: 'variable-2'
+        TT_INSTRUCTION: 'variable',
+        TT_LABEL: 'variable-2',
+        TT_REGISTER: 'keyword',
+        TT_DEVICE: 'keyword',
+        TT_HASH_OPEN: 'comment',
+        TT_HASH_CLOSE: 'comment',
+        TT_HASH_STRING: 'string',
+        TT_NUM_CONST: 'variable-3',
+        TT_NUM_DEC: 'number',
+        TT_INT_DEC: 'number',
+        TT_INT_HEX: 'number',
+        TT_INT_BIN: 'number',
+        TT_BATCH_MODE: 'variable-3',
+        TT_REAG_MODE: 'variable-3',
+        TT_ALIAS: 'string',
+        TT_COMMENT: 'comment',
+        TT_MALFORMED: 'error',
+        TT_SPACE: null,
+        TT_UNKNOWN: null,
     };
     return {
         startState: () => {
             return {
+                lexer: new IC10Lexer(),
+                tokens: [],
+                labels: [],
+                lastInstr: null,
+                argIdx: 0
             };
         },
         token: (stream, state) => {
-            var char = stream.peek();
             var token = null;
-            do {
-                char = stream.next();
-                token = IC10.ParseASTByChar(char, stream.peek(), state);
-            } while (char != null && token == null)
-            if (token != null) return tokenTypes[token];
+            
+            while (token == null)
+            {
+                var char = stream.next();
+                if (char != null)
+                    token = state.lexer.eatChar(char, stream.peek());
+
+                if (token != null && token.ID == 'TT_LABEL')
+                    state.labels.push(token.DATA);
+                if (token != null && token.ID == 'TT_ALIAS')
+                    if (state.labels.findIndex(i => i == token.DATA) >= 0 || lookAhead(token.DATA))
+                        token.ID = 'TT_LABEL';
+
+                if (char == null ) break;
+            }
+
+            if (this.lastInstr != null)
+
+            if (token != null)
+                state.tokens.push(token);
+            return token == null ? null : tokenTypes[token.ID];
+
+            function lookAhead(labelName) {
+                var line = "";
+                var idx = 0;
+                do {
+                    idx++;
+                    line = stream.lookAhead(idx);
+                    if (line == null) break;
+                    if (line.trimStart().startsWith(labelName + ':')) return true;
+                } while (line != null)
+            }
         }
     };
 });

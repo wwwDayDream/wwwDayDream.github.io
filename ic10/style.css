@@ -30,12 +30,10 @@ html {
     display: flex;
 }
 .code-container {
-  height: 100%;
-  width: 50%;
+  float: left;
 }
 .code-container-out {
-  height: 100%;
-  width: 50%; 
+  float: right;
 }
 
 .CodeMirror {
