@@ -463,21 +463,22 @@ class IC10Lexer {
 // @ts-ignore
 CodeMirror.defineMode('ic10', function() {
     const tokenTypes = {
-        TT_INSTRUCTION: 'variable',
-        TT_LABEL: 'variable-2',
-        TT_REGISTER: 'keyword',
-        TT_DEVICE: 'keyword',
-        TT_HASH_OPEN: 'comment',
-        TT_HASH_CLOSE: 'comment',
-        TT_HASH_STRING: 'string',
-        TT_NUM_CONST: 'variable-3',
-        TT_NUM_DEC: 'number',
-        TT_INT_DEC: 'number',
-        TT_INT_HEX: 'number',
-        TT_INT_BIN: 'number',
-        TT_BATCH_MODE: 'variable-3',
-        TT_REAG_MODE: 'variable-3',
-        TT_ALIAS: 'string',
+        TT_INSTRUCTION: 'instruction',
+        TT_LABEL: 'label',
+        TT_REGISTER: 'register',
+        TT_DEVICE: 'device',
+        TT_HASH_OPEN: 'hash',
+        TT_HASH_CLOSE: 'hash',
+        TT_HASH_STRING: 'hash-string',
+        TT_NUM_CONST: 'num',
+        TT_NUM_DEC: 'num',
+        TT_INT_DEC: 'num',
+        TT_INT_HEX: 'num',
+        TT_INT_BIN: 'num',
+        TT_BATCH_MODE: 'logic-type',
+        TT_REAG_MODE: 'logic-type',
+        TT_ALIAS: 'header',
+        TT_ALIAS_C: 'variable-2',
         TT_COMMENT: 'comment',
         TT_MALFORMED: 'error',
         TT_SPACE: null,
@@ -489,6 +490,8 @@ CodeMirror.defineMode('ic10', function() {
                 lexer: new IC10Lexer(),
                 tokens: [],
                 labels: [],
+                aliases: [],
+                defines: [],
                 lastInstr: null,
                 argIdx: 0
             };
@@ -502,11 +505,26 @@ CodeMirror.defineMode('ic10', function() {
                 if (char != null)
                     token = state.lexer.eatChar(char, stream.peek());
 
-                if (token != null && token.ID == 'TT_LABEL')
-                    state.labels.push(token.DATA);
-                if (token != null && token.ID == 'TT_ALIAS')
-                    if (state.labels.findIndex(i => i == token.DATA) >= 0 || lookAhead(token.DATA))
-                        token.ID = 'TT_LABEL';
+                if (token != null) {
+                    if (token.ID == 'TT_INSTRUCTION')
+                        state.lastInstr = token;
+                    if (token.ID == 'TT_LABEL')
+                        state.labels.push(token.DATA);
+                    if (token.ID == 'TT_ALIAS'){
+                        if (state.lastInstr != null && state.lastInstr.DATA == 'alias') {
+                            state.aliases.push(token.DATA);
+                            token.ID = 'TT_ALIAS_C'
+                        }
+                        else if (state.lastInstr != null && state.lastInstr.DATA == 'define') {
+                            state.defines.push(token.DATA);
+                            token.ID = 'TT_ALIAS_C'
+                        }
+                        else if (state.aliases.findIndex(i => i == token.DATA) >= 0 || state.labels.findIndex(i => i == token.DATA) >= 0)
+                            token.ID = 'TT_ALIAS_C'
+                        if (state.labels.findIndex(i => i == token.DATA) >= 0 || lookAhead(token.DATA))
+                            token.ID = 'TT_LABEL';
+                    }
+                }
 
                 if (char == null ) break;
             }

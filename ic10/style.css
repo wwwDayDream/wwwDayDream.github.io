@@ -23,6 +23,42 @@ html {
 }
 
 /* ----------
+	Styles for custom tokens
+---------- */
+.cm-instruction {
+    color: #caba0d;
+}
+.cm-label {
+	color: #9520df;
+}
+.cm-register {
+	color: #006fdf;
+}
+.cm-device {
+	color: #00e200;
+}
+.cm-hash {
+	color: #8B8B8C;
+}
+.cm-hash-string {
+	color: #DEDEDF;
+}
+.cm-num {
+	color: #1FA6A0;
+}
+.cm-logic-type {
+	color: #ce6809;
+}
+.CodeMirror {
+	height: 100%;
+	background-color: #021425;
+	color: #DEDEDF;
+}
+.CodeMirror-gutter {
+	background-color: #001223;
+	color: #606161;
+}
+/* ----------
 	CODE BLOCK
 ---------- */
 .container {
@@ -34,10 +70,6 @@ html {
 }
 .code-container-out {
   float: right;
-}
-
-.CodeMirror {
-  height: 100%;
 }
 
 .copy-code-wrap {
