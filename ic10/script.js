@@ -4,7 +4,7 @@
 */
 const localStorageKey = 'ic10-working';
 
-var editorOutput = CodeMirror.fromTextArea(document.getElementById("code-out"), {
+var editorOutput = CodeMirror.fromTextArea(document.getElementById('code-out'), {
 	firstLineNumber: 0,
 	lineWrapping: true,
 	lineNumbers: true,			// gives a lineNumber gutter
@@ -23,7 +23,7 @@ var editorOutput = CodeMirror.fromTextArea(document.getElementById("code-out"), 
 	electricChars: true,
 	scrollbarStyle: null
 });
-var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+var editor = CodeMirror.fromTextArea(document.getElementById('code'), {
   firstLineNumber: 0,
   lineWrapping: true,
 	lineNumbers: true,			// gives a lineNumber gutter
@@ -48,18 +48,13 @@ function lexing() {
 	editor.lexingTimeoutID = null;
 };
 editor.lexingTimeoutID = null;
-editor.on("change", (ed, changeObj) => {
+editor.on('change', (ed, changeObj) => {
 	if (editor.lexingTimeoutID != null)
 		clearTimeout(editor.lexingTimeoutID);
 	editor.lexingTimeoutID = setTimeout(lexing, 250);
 });
-editor.setValue(localStorage.getItem(localStorageKey) ?? "");
+editor.setValue(localStorage.getItem(localStorageKey) ?? '');
 // editorOutput.setValue(StripIC10(editor.getValue()));
-$('.copy-code-wrap').on("click", function (e) {
-	if (e.which == 1) {
-		navigator.clipboard.writeText(editorOutput.getValue());
-	}
-});
 function syncScroll(sourceEditor, targetEditor) {
 	sourceEditor.on('scroll', () => {
 		const sourceScrollInfo = sourceEditor.getScrollInfo();
@@ -78,7 +73,7 @@ $(document).ready(function() {
 		sizes = [50, 50] // default sizes
 	}
 
-	Split([ ".code-container", ".code-container-out" ], {
+	Split([ '.code-container', '.code-container-out' ], {
 		direction: 'horizontal',
 		sizes: sizes,
 		onDragEnd: function (sizes) {
@@ -87,8 +82,27 @@ $(document).ready(function() {
 	});
 })
 
-/* 
-	Setup Split
-*/
+$('.left-side').toolbar( {
+	content: '#left-file-toolbar-options',
+	position: 'bottom'
+} );
+$('.right-side').toolbar( {
+	content: '#right-file-toolbar-options',
+	position: 'bottom'
+} );
 
-console.log("All loaded a-okay!");
+$('.left-side').on('toolbarItemClick', async function(event, button) {
+	if (button.id == 'menu-copy') {
+		navigator.clipboard.writeText(editor.getValue());	
+	} else if (button.id == 'menu-paste') {
+		editor.setValue(await navigator.clipboard.readText());	
+	}
+});
+$('.right-side').on('toolbarItemClick', function(event, button) {
+	if (button.id == 'menu-copy') {
+		navigator.clipboard.writeText(editorOutput.getValue());	
+	} 
+});
+
+
+console.log('All loaded a-okay!');

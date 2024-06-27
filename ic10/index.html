@@ -3,16 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <title>Stationeers - IC10 Editor</title>
+  
   <link rel='stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/codemirror/5.13.4/codemirror.css'>
   <link rel='stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/codemirror/5.13.4/theme/material.css'>
-  <link rel="stylesheet" href="https://unpkg.com/uiw/codemirror-themes.css" type="text/css" />
+  <link href="./toolbarjs/jquery.toolbar.css" rel="stylesheet" />
+  <link rel="icon" type="image/x-icon" href="./favicon.ico">
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
 <!-- partial:index.partial.html -->
-	<!-- button to copy the editor -->
+<!-- button to copy the editor -->
+<div id="left-file-toolbar-options" class="hidden">
+  <a href="#" id="menu-copy"><i class="fa-solid fa-copy"></i></a>
+  <a href="#" id="menu-paste"><i class="fa-solid fa-paste"></i></a>
+</div>
+<div id="right-file-toolbar-options" class="hidden">
+  <a href="#" id="menu-copy"><i class="fa-solid fa-copy"></i></a>
+</div>
 <div class="container">
-  
+  <div style="display: flex; flex-direction: column;">
+    <div class="btn-toolbar left-side"><i class="fa-solid fa-clipboard"></i></div>
+  </div>
   <div class="code-container">
     <textarea id="code">
 keep space
@@ -25,9 +36,9 @@ keep labels
   <div class="code-container-out">
     <textarea id="code-out">
     </textarea>
-    <div class="copy-code-wrap">
-      <div class="copy-code"></div>
-    </div>
+  </div>
+  <div style="display: flex; flex-direction: column;">
+    <div class="btn-toolbar right-side"><i class="fa-solid fa-clipboard"></i></div>
   </div>
 </div>
 <!-- partial -->
@@ -36,6 +47,8 @@ keep labels
   <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moo/0.5.2/moo.js"></script>
   <script src="https://unpkg.com/uiw/codemirror-themes"></script>
+  <script src="https://kit.fontawesome.com/a3d8a07eb0.js" crossorigin="anonymous"></script>
+  <script src="./toolbarjs/jquery.toolbar.js"></script>
   <script  src="./ic10.js"></script>
   <script  src="./script.js"></script>
 </body>
