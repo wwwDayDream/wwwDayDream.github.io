@@ -386,6 +386,8 @@ class IC10Lexer {
         SPACES: function() {
             if (this.char == ' ')
                 this.yield('SPACE');
+            else if (this.char == '\t')
+                this.yield('TAB');
             else
                 this.transition(this.lastState);
         },
@@ -393,6 +395,9 @@ class IC10Lexer {
             switch (this.char) {
                 case null:
                     this.yield('NL');
+                    break;
+                case '\t':
+                    this.transition('SPACES');
                     break;
                 case ' ':
                     this.transition('SPACES');
