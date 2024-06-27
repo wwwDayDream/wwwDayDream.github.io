@@ -96,6 +96,12 @@ $('.left-side').on('toolbarItemClick', async function(event, button) {
 		navigator.clipboard.writeText(editor.getValue());	
 	} else if (button.id == 'menu-paste') {
 		editor.setValue(await navigator.clipboard.readText());	
+	} else if (button.id == 'menu-reset') {
+		editor.setValue(`-keep space
+-keep comments
+-keep alias
+-keep labels
+-keep defines`);
 	}
 });
 $('.right-side').on('toolbarItemClick', function(event, button) {
