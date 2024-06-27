@@ -310,8 +310,9 @@ RegExp.prototype.matchesAll = function(target) {
 
 class IC10Lexer {
     REGEX = {
-        REGISTERS: /r(1[0-5]|[0-9]|a)/,
-        DEVICES: /d(\d+|b)/,
+        REGISTERS: /r((?:r*(?:1[0-5]|[0-9]))|a)/,
+        DEVICES: /d([0-5]|b|(?:r+(?:1[0-5]|[0-9])))/,
+        STACKPOINTER: /sp/,
         NUM_CONST: new RegExp(`^(${UpdateReady.CONSTANTS.join('|')})$`, 'i'),
         NUM_DEC: /([-]?(?:[0-9]+[.][0-9]+))/,
         NUM_HASH: /(".+")/,
@@ -340,6 +341,8 @@ class IC10Lexer {
                     this.yield('REGISTER');
                 else if (this.REGEX.DEVICES.matchesAll(this.current))
                     this.yield('DEVICE');
+                else if (this.REGEX.STACKPOINTER.matchesAll(this.current))
+                    this.yield('STACKPOINTER');
                 else if (this.REGEX.NUM_CONST.matchesAll(this.current))
                     this.yield('NUM_CONST');
                 else if (this.REGEX.NUM_DEC.matchesAll(this.current))
@@ -495,6 +498,7 @@ CodeMirror.defineMode('ic10', function() {
         TT_INSTRUCTION: 'instruction',
         TT_LABEL: 'label',
         TT_REGISTER: 'register',
+        TT_STACKPOINTER: 'register',
         TT_DEVICE: 'device',
         TT_HASH_OPEN: 'hash',
         TT_HASH_CLOSE: 'hash',

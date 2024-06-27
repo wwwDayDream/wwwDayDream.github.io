@@ -86,14 +86,10 @@ $('.left-side').toolbar( {
 	content: '#left-file-toolbar-options',
 	position: 'bottom'
 } );
-$('.right-side').toolbar( {
-	content: '#right-file-toolbar-options',
-	position: 'bottom'
-} );
 
 $('.left-side').on('toolbarItemClick', async function(event, button) {
 	if (button.id == 'menu-copy') {
-		navigator.clipboard.writeText(editor.getValue());	
+		navigator.clipboard.writeText(editorOutput.getValue());	
 	} else if (button.id == 'menu-paste') {
 		editor.setValue(await navigator.clipboard.readText());	
 	} else if (button.id == 'menu-reset') {
@@ -101,14 +97,9 @@ $('.left-side').on('toolbarItemClick', async function(event, button) {
 -keep comments
 -keep alias
 -keep labels
--keep defines`);
+-keep defines
+`);
 	}
 });
-$('.right-side').on('toolbarItemClick', function(event, button) {
-	if (button.id == 'menu-copy') {
-		navigator.clipboard.writeText(editorOutput.getValue());	
-	} 
-});
-
 
 console.log('All loaded a-okay!');
