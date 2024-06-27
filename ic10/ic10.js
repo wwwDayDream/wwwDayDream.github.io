@@ -557,7 +557,7 @@ CodeMirror.defineMode('ic10', function() {
                             state.defines.push(token.DATA);
                             token.ID = 'TT_ALIAS_C'
                         }
-                        else if (state.aliases.findIndex(i => i == token.DATA) >= 0 || state.labels.findIndex(i => i == token.DATA) >= 0)
+                        else if (state.aliases.findIndex(i => i == token.DATA) >= 0 || state.defines.findIndex(i => i == token.DATA) >= 0)
                             token.ID = 'TT_ALIAS_C'
                         if (state.labels.findIndex(i => i == token.DATA) >= 0 || lookAhead(token.DATA))
                             token.ID = 'TT_LABEL';
