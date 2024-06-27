@@ -388,6 +388,9 @@ class IC10Lexer {
         },
         SOL: function() {
             switch (this.char) {
+                case null:
+                    this.yield('NL');
+                    break;
                 case ' ':
                     this.transition('SPACES');
                     break;
@@ -432,6 +435,32 @@ class IC10Lexer {
         } while (this.transitioned)
         this.charPostProcessor();
         return this.token;
+    }
+    eatLine(line) {
+        const tokens = [];
+        if (line.length == 0) // Manual bypass for no length lines
+        {
+            const token = this.eatChar(null, null);
+            if (token != null)
+                tokens.push(token);
+        }
+        for (let idx = 0; idx < line.length; idx++)
+        {
+            const token = this.eatChar(line[idx], line[idx + 1]);
+            if (token != null)
+                tokens.push(token);
+        }
+        return tokens;
+    }
+    eatScript(script) {
+        var tokens = [];
+        const scriptSplit = script.split('\n');
+        for (const line of scriptSplit)
+        {
+            const manyToken = this.eatLine(line);
+            tokens = tokens.concat(manyToken);
+        }
+        return tokens;
     }
 
     charPreProcessor(char, nextChar) {
@@ -594,6 +623,7 @@ function StripIC10(code) {
           }
           continue;
         }
+        if (leader == '-keep') continue;
         if (leader == '#' && !keepComments) continue;
         if (leader == 'alias' && itemSplit.length > 2 && !keepAliases) {
             aliases[itemSplit[1]] = itemSplit[2].trim();
@@ -648,4 +678,68 @@ function StripIC10(code) {
                 }).join(' ')
         })
         .join('\n');
+}
+
+function IC10Stripper(tokenList) {
+    const aliases = [];
+    const defines = [];
+    const labels = [];
+    var result = '';
+    var lastToken = null;
+    var lastInstruction = null;
+    var lineOffset = 0;
+
+    const Modifiers = {
+        space: function(token) {
+            
+        }
+    }
+    const EnabledModifiers = {};
+    
+    const lastInstructionIsModifier = () => lastInstruction != null && (lastInstruction.DATA == '-' || lastInstruction.DATA == '+');
+    for (const token of tokenList) {
+        var blockAdd = false;
+        blockAdd ||= ProcessNewLine(token);
+
+        blockAdd ||= ProcessModifiers(token);
+
+        for (const modifier of Object.keys(EnabledModifiers)) {
+            if (EnabledModifiers[modifier] && Modifiers[modifier])
+                blockAdd ||= Modifiers[modifier](token);
+        }
+        
+        if (!blockAdd)
+            result += token.DATA;
+        lastToken = token;
+        if (token.ID == 'TT_INSTRUCTION')
+            lastInstruction = token;
+    }
+
+    console.log({labels, defines, aliases, lineOffset, EnabledModifiers})
+    return result;
+
+    function ProcessNewLine(token) {
+        if (lastToken == null) return;
+        if (lastToken.LINE == token.LINE) return;
+        // It's a line change, should we block it?
+        var block = false;
+        if (lastInstructionIsModifier()) block = true;
+        if (!block) 
+            result += '\n';
+        else
+            lineOffset--;
+        lastInstruction = null;
+    }
+    function ProcessModifiers(token) {
+        const isModifierAdd = lastInstruction != null && lastInstruction.DATA == '-';
+        const isModifierSub = lastInstruction != null && lastInstruction.DATA == '+';
+        if (isModifierSub && token.ID == 'TT_ALIAS' && EnabledModifiers[token.DATA] != null)
+            EnabledModifiers[token.DATA] = undefined;
+        if (isModifierAdd && token.ID == 'TT_ALIAS' )
+            EnabledModifiers[token.DATA] = true;
+        if (token.ID == 'TT_INSTRUCTION' && (token.DATA == '-' || token.DATA == '+'))
+            return true;
+
+        return isModifierAdd || isModifierSub;
+    }
 }
