@@ -3,25 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <title>Stationeers - IC10 Editor</title>
-  
+  <!-- 
   <link rel='stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/codemirror/5.13.4/codemirror.css'>
   <link rel='stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/codemirror/5.13.4/theme/material.css'>
-  <link href="./toolbarjs/jquery.toolbar.css" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css"> -->
   <link rel="icon" type="image/x-icon" href="./favicon.ico">
-  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
 <!-- partial:index.partial.html -->
-<!-- button to copy the editor -->
-<div id="left-file-toolbar-options" class="hidden">
-  <a href="#" id="menu-copy"><i class="fa-solid fa-copy"></i></a>
-  <a href="#" id="menu-paste"><i class="fa-solid fa-paste"></i></a>
-  <a href="#" id="menu-reset"><i class="fa-solid fa-trash-can-arrow-up"></i></a>
-</div>
 <div class="container">
-  <div style="display: flex; flex-direction: column;">
-    <div class="btn-toolbar left-side"><i class="fa-solid fa-clipboard"></i></div>
-  </div>
   <div class="code-container">
     <textarea id="code">
 -keep space
@@ -37,15 +27,15 @@
     </textarea>
   </div>
 </div>
-<!-- partial -->
-  <script src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.4/codemirror.js'></script>
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/moo/0.5.2/moo.js"></script>
-  <script src="https://unpkg.com/uiw/codemirror-themes"></script>
+<!-- button to copy the editor -->
+<!-- partial
+<script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.4/codemirror.js'></script> -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://kit.fontawesome.com/a3d8a07eb0.js" crossorigin="anonymous"></script>
-  <script src="./toolbarjs/jquery.toolbar.js"></script>
-  <script  src="./ic10.js"></script>
-  <script  src="./script.js"></script>
+  <script src="bundle.js"></script>
+  <script src="./scripts/requires.js"></script>
+  <script src="./scripts/ic10.js"></script>
+  <script src="./scripts/main.js"></script>
 </body>
 </html>

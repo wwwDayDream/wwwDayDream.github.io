@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "browserify-css": "^0.15.0",
+    "codemirror": "^5.65.16",
+    "split.js": "^1.6.5"
+  },
+  "scripts": {
+    "build": "npm install && (npm list -g browserify || npm install -g browserify) && browserify -t browserify-css modules.js -o bundle.js"
+  }
+}

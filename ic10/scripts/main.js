@@ -1,8 +1,10 @@
-
 /* 
 	Setup Active IC10 Editor(s)
 */
+
 const localStorageKey = 'ic10-working';
+
+console.log(CodeMirror.fromTextArea);
 
 var editorOutput = CodeMirror.fromTextArea(document.getElementById('code-out'), {
 	firstLineNumber: 0,
@@ -45,7 +47,13 @@ function lexing() {
 	const content = editor.getValue();
 	localStorage.setItem(localStorageKey, content);
 	editorOutput.setValue(StripIC10(content));
+	//var tokens = (new IC10Lexer(content)).tokens;
+	//var tokensStripped = IC10Stripper(tokens);
+	//var newContent = IC10Detokenizer
+	//editorOutput.setValue(IC10Stripper((new IC10Lexer()).eatScript(content).map(token => token.DATA).join));
 	editor.lexingTimeoutID = null;
+	const sourceScrollInfo = editor.getScrollInfo();
+	editorOutput.scrollTo(sourceScrollInfo.left, sourceScrollInfo.top);
 };
 editor.lexingTimeoutID = null;
 editor.on('change', (ed, changeObj) => {
@@ -73,7 +81,7 @@ $(document).ready(function() {
 		sizes = [50, 50] // default sizes
 	}
 
-	Split([ '.code-container', '.code-container-out' ], {
+	SplitJS([ '.code-container', '.code-container-out' ], {
 		direction: 'horizontal',
 		sizes: sizes,
 		onDragEnd: function (sizes) {
@@ -82,24 +90,24 @@ $(document).ready(function() {
 	});
 })
 
-$('.left-side').toolbar( {
-	content: '#left-file-toolbar-options',
-	position: 'bottom'
-} );
+// $('.left-side').toolbar( {
+// 	content: '#left-file-toolbar-options',
+// 	position: 'bottom'
+// } );
 
-$('.left-side').on('toolbarItemClick', async function(event, button) {
-	if (button.id == 'menu-copy') {
-		navigator.clipboard.writeText(editorOutput.getValue());	
-	} else if (button.id == 'menu-paste') {
-		editor.setValue(await navigator.clipboard.readText());	
-	} else if (button.id == 'menu-reset') {
-		editor.setValue(`-keep space
--keep comments
--keep alias
--keep labels
--keep defines
-`);
-	}
-});
+// $('.left-side').on('toolbarItemClick', async function(event, button) {
+// 	if (button.id == 'menu-copy') {
+// 		navigator.clipboard.writeText(editorOutput.getValue());	
+// 	} else if (button.id == 'menu-paste') {
+// 		editor.setValue(await navigator.clipboard.readText());	
+// 	} else if (button.id == 'menu-reset') {
+// 		editor.setValue(`-keep space
+// -keep comments
+// -keep alias
+// -keep labels
+// -keep defines
+// `);
+// 	}
+// });
 
 console.log('All loaded a-okay!');

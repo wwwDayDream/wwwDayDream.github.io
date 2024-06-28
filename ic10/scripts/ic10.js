@@ -411,9 +411,12 @@ class IC10Lexer {
             }
         }
     }
-    constructor() {
+    constructor(script) {
         this.line = 0;
         this.charPostProcessor();
+        if (script != null) {
+            this.tokens = this.eatScript(script)
+        }
     }
   
     yield(tokenID) {
