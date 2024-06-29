@@ -4,8 +4,6 @@
 
 const localStorageKey = 'ic10-working';
 
-console.log(CodeMirror.fromTextArea);
-
 var editorOutput = CodeMirror.fromTextArea(document.getElementById('code-out'), {
 	firstLineNumber: 0,
 	lineWrapping: true,
@@ -61,6 +59,9 @@ editor.on('change', (ed, changeObj) => {
 		clearTimeout(editor.lexingTimeoutID);
 	editor.lexingTimeoutID = setTimeout(lexing, 250);
 });
+editor.on('keyHandled', (ed, name, event) => {
+	console.log(ed, name, event);
+})
 editor.setValue(localStorage.getItem(localStorageKey) ?? '');
 // editorOutput.setValue(StripIC10(editor.getValue()));
 function syncScroll(sourceEditor, targetEditor) {
@@ -88,7 +89,113 @@ $(document).ready(function() {
 			localStorage.setItem('split-sizes', JSON.stringify(sizes))
 		},
 	});
+	
+	$("#menu").menu();
+
+	// Click events for copy left and right
+	$(".copy-left").click(function() {
+	navigator.clipboard.writeText(editor.getValue());
+	});
+
+	$(".copy-right").click(function() {
+	navigator.clipboard.writeText(editorOutput.getValue());
+	});
+	// Initialize dialog
+	$("#filename-dialog").dialog({
+		autoOpen: false,
+		modal: true,
+		close: function() {
+		  $('#filename').val(''); // Clear the input field on close
+		}
+	  });
+	
+	  let currentAction = '';
+	
+	  // Populate file list
+	  function populateFileList() {
+		localForage.keys().then(function(keys) {
+		  const fileList = $('#filename-dialog .file-list');
+		  fileList.empty();
+		  keys.forEach(function(key) {
+			fileList.append(`
+			  <li>
+				<span class="file-name">${key}</span>
+				<span class="delete-btn" data-filename="${key}">&times;</span>
+			  </li>
+			`);
+		  });
+		});
+	  }
+	
+	  // Click event for file list items
+	  $(document).on('click', '#filename-dialog .file-list li .file-name', function() {
+		$('#filename').val($(this).text());
+	  });
+	
+	  // Click event for delete buttons
+	  $(document).on('click', '#filename-dialog .file-list li .delete-btn', function(event) {
+		const filename = $(this).data('filename');
+		localForage.removeItem(filename).then(function() {
+		  populateFileList();
+		});
+		event.stopPropagation(); // Prevent triggering the parent click event
+	  });
+	
+	  // Save file button event
+	  $('.file-save').click(function() {
+		currentAction = 'save';
+		$("#filename-dialog").dialog("option", "buttons", {
+		  "Save": function() {
+			const filename = $('#filename').val();
+			if (filename) {
+			  localForage.setItem(filename, editor.getValue()).then(function() {
+				populateFileList();
+			  });
+			  $(this).dialog("close");
+			} else {
+			  alert('Please enter a filename');
+			}
+		  },
+		  "Cancel": function() {
+			$(this).dialog("close");
+		  }
+		});
+		populateFileList();
+		$("#filename-dialog").dialog("open");
+	  });
+	
+	  // Load file button event
+	  $('.file-load').click(function() {
+		currentAction = 'load';
+		$("#filename-dialog").dialog("option", "buttons", {
+		  "Load": function() {
+			const filename = $('#filename').val();
+			if (filename) {
+				localForage.getItem(filename).then(function(value) {
+				if (value) {
+				  editor.setValue(value);
+				  // Add your logic to handle the loaded file content here
+				} else {
+				  alert('File not found: ' + filename);
+				}
+			  });
+			  $(this).dialog("close");
+			} else {
+			  alert('Please enter a filename');
+			}
+		  },
+		  "Cancel": function() {
+			$(this).dialog("close");
+		  }
+		});
+		populateFileList();
+		$("#filename-dialog").dialog("open");
+	  });
+	
+	  // Initial population of file list
+	  populateFileList();
 })
+
 
 // $('.left-side').toolbar( {
 // 	content: '#left-file-toolbar-options',

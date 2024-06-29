@@ -7,11 +7,26 @@
   <link rel='stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/codemirror/5.13.4/codemirror.css'>
   <link rel='stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/codemirror/5.13.4/theme/material.css'>
   <link rel="stylesheet" href="./style.css"> -->
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.3/themes/base/jquery-ui.css">
   <link rel="icon" type="image/x-icon" href="./favicon.ico">
 </head>
 <body>
 <!-- partial:index.partial.html -->
 <div class="container">
+  <ul id="menu">
+    <li><i class="fa-regular fa-file"></i>
+      <ul>
+        <li><div class="menu-file file-save">Save</div></li>
+        <li><div class="menu-file file-load">Load</div></li>
+      </ul>
+    </li>
+    <li><i class="fa-regular fa-clipboard"></i>
+      <ul><div style="text-align: center;">Copy</div><section></section>
+        <li><div class="menu-copy copy-left"><< Left</div></li>
+        <li><div class="menu-copy copy-right">Right >></div></li>
+      </ul>
+    </li>
+  </ul>
   <div class="code-container">
     <textarea id="code">
 -keep space
@@ -27,11 +42,35 @@
     </textarea>
   </div>
 </div>
+<!-- Dialog for entering filename -->
+<div id="filename-dialog" title="Enter Filename">
+  <label for="filename">Filename:</label>
+  <input type="text" id="filename" name="filename">
+  <ul class="file-list"></ul>
+</div>
+<style>
+  #filename-dialog .file-list {
+    max-height: 150px;
+    overflow-y: auto;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    padding: 5px;
+  }
+  #filename-dialog .file-list li {
+    cursor: pointer;
+    padding: 5px;
+    border-bottom: 1px solid #eee;
+  }
+  #filename-dialog .file-list li:hover {
+    background-color: #f0f0f0;
+  }
+</style>
 <!-- button to copy the editor -->
 <!-- partial
 <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.4/codemirror.js'></script> -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.min.js"></script>
   <script src="https://kit.fontawesome.com/a3d8a07eb0.js" crossorigin="anonymous"></script>
   <script src="bundle.js"></script>
   <script src="./scripts/requires.js"></script>
