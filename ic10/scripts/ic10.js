@@ -335,7 +335,7 @@ class IC10Lexer {
                 this.transition('COMMENT');
             } else if (this.current == 'HASH(') {
                 this.transition('HASH');
-            } else if (this.nextChar == ' ' || this.nextChar == '#' || this.eol)
+            } else if (this.nextChar == '\t' || this.nextChar == ' ' || this.nextChar == '#' || this.eol)
             {
                 if (this.REGEX.REGISTERS.matchesAll(this.current))
                     this.yield('REGISTER');
@@ -366,7 +366,7 @@ class IC10Lexer {
         STATEMENT: function() {
             if (this.nextChar == ':')
                 this.yieldAndTransition('LABEL', 'EOL');
-            if (this.nextChar == ' ' || this.eol)
+            if (this.nextChar == '\t' || this.nextChar == ' ' || this.eol)
                 this.yieldAndTransition('INSTRUCTION', 'ARG');
         },
         HASH: function() {
@@ -500,8 +500,98 @@ class IC10Lexer {
     }
 }
 
+class IC10Stripper {
+    modules = []
+    constructor() {
+        this
+            .use(ImportStatements)
+            .use(HandleProcessStatements)
+
+        async function ImportStatements(line, state) {
+            const ImportPattern = /^[ \t]*import[ \t]+([A-Za-z0-9.-_]+)/;
+            var match = line.match(ImportPattern);
+            if (match) {
+                const value = await localForage.getItem(match[1]);
+                if (value != null) {
+                    return value;
+                }
+            }
+            return line;
+        }
+        function HandleProcessStatements(line, state) {
+            const ProcessPattern = /^[ \t]*process/;
+            var match = line.match(ProcessPattern);
+            if (!state.inProcess && match) {
+                state.inProcess = true;
+                state.processData = '';
+                state.processPriority = match[1];
+                return null;
+            }
+            if (line.match(/^[ \t]*end[ \t]*$/) && state.inProcess){
+                state.inProcess = false;
+                
+                var tempFunc;
+                const newMethod = `tempFunc = function(line, state) { ${state.processData} }`;
+                try {
+                    eval(newMethod);
+                    state.use(tempFunc);
+                } catch (exce) {
+                    console.log(exce);
+                }
+                return null;
+            }
+            if (state.inProcess && line != null) {
+                state.processData += line + '\n';
+                return null;
+            }
+            return line;
+        }
+    }
+    use(module) {
+        this.modules.push(module);
+        return this;
+    }
+    async process(script) {
+        this.lines = script.split('\n');
+        const backup = this.modules;
+
+        while (this.modules.length > 0)
+        {
+            this.modules = this.modules.reverse();
+            const currentModule = this.modules.pop();
+            this.modules = this.modules.reverse();
+
+            await LineProcessor(this, async (line, state) => await currentModule(line, state));
+            this.lines = this.lines.join('\n').split('\n');
+        }
+
+        this.modules = backup;
+        return this.lines.join('\n');
+
+        async function LineProcessor(state, callback) {
+            var newLines = [];
+            state.linesSkipped = 0;
+            state.line = 0;
+            for (let line of state.lines) {
+                line = await callback(line, state);
+
+                if (line != null) 
+                    if (typeof(line) == typeof([]))
+                        newLines.concat(line);
+                    else
+                        newLines.push(line);
+                else 
+                    state.linesSkipped++;
+                state.line++;
+            }
+            state.lines = newLines;
+        }
+    }
+}
+
 // @ts-ignore
-CodeMirror.defineMode('ic10', function() {
+CodeMirror.defineMode('ic10', function(config) {
+    var jsMode = CodeMirror.getMode(config, "javascript");
     const tokenTypes = {
         TT_INSTRUCTION: 'instruction',
         TT_LABEL: 'label',
@@ -519,7 +609,8 @@ CodeMirror.defineMode('ic10', function() {
         TT_BATCH_MODE: 'logic-type',
         TT_REAG_MODE: 'logic-type',
         TT_ALIAS: 'header',
-        TT_ALIAS_C: 'variable-2',
+        TT_ALIAS_A: 'regdevice',
+        TT_ALIAS_D: 'num',
         TT_COMMENT: 'comment',
         TT_MALFORMED: 'error',
         TT_SPACE: null,
@@ -534,12 +625,19 @@ CodeMirror.defineMode('ic10', function() {
                 aliases: [],
                 defines: [],
                 lastInstr: null,
-                argIdx: 0
+                argIdx: 0,
+                nestedState: CodeMirror.startState(jsMode)
             };
         },
         token: (stream, state) => {
             var token = null;
-            
+            if (state.inNested) {
+                if (stream.sol() && stream.match(/[ \t]*end/)) {
+                    state.inNested = false;
+                    return tokenTypes['TT_INSTRUCTION'];
+                }
+                return jsMode.token(stream, state.nestedState);
+            }
             while (token == null)
             {
                 var char = stream.next();
@@ -554,23 +652,29 @@ CodeMirror.defineMode('ic10', function() {
                     if (token.ID == 'TT_ALIAS'){
                         if (state.lastInstr != null && state.lastInstr.DATA == 'alias') {
                             state.aliases.push(token.DATA);
-                            token.ID = 'TT_ALIAS_C'
+                            token.ID = 'TT_ALIAS_A'
                         }
                         else if (state.lastInstr != null && state.lastInstr.DATA == 'define') {
                             state.defines.push(token.DATA);
-                            token.ID = 'TT_ALIAS_C'
+                            token.ID = 'TT_ALIAS_D'
                         }
-                        else if (state.aliases.findIndex(i => i == token.DATA) >= 0 || state.defines.findIndex(i => i == token.DATA) >= 0)
-                            token.ID = 'TT_ALIAS_C'
+                        else if (state.aliases.findIndex(i => i == token.DATA) >= 0)
+                            token.ID = 'TT_ALIAS_A'
+                        else if (state.defines.findIndex(i => i == token.DATA) >= 0)
+                            token.ID = 'TT_ALIAS_D'
                         if (state.labels.findIndex(i => i == token.DATA) >= 0 || lookAhead(token.DATA))
                             token.ID = 'TT_LABEL';
                     }
                 }
 
+                if (state.lastInstr != null && state.lastInstr.DATA == 'process') {
+                    state.scriptMode = token.DATA;
+                    state.inNested = true;
+                    state.lastInstr = null;
+                    state.lexer.eatChar(null, null); // Ye ol' EoL
+                }
                 if (char == null ) break;
             }
-
-            if (this.lastInstr != null)
 
             if (token != null)
                 state.tokens.push(token);
@@ -589,105 +693,3 @@ CodeMirror.defineMode('ic10', function() {
         }
     };
 });
-  
-function StripIC10(code) {
-    const definitions = {};
-    const aliases = {};
-    const labels = {};
-
-    const strippedContent = [];
-
-    const codeSplit = code.split('\n');
-
-    // @ts-ignore
-    index = 0;
-    var keepSpace = false;
-    var keepComments = false;
-    var keepAliases = false;
-    var keepDefines = false;
-    var keepLabels = false;
-    for (var item of codeSplit) {
-        var evalItem = item.trim();
-        item = keepSpace ? item : evalItem;
-        if (evalItem.length == 0 && !keepSpace) continue;
-        var itemSplit = evalItem.split(' ');
-        var leader = itemSplit[0];
-        if (leader == 'keep') {
-          var follower = itemSplit[1];
-          switch (follower.toLowerCase()) {
-            case 'space':
-              keepSpace = true;
-              break;
-            case 'comments':
-              keepComments = true;
-              break;
-            case 'alias':
-              keepAliases = true;
-              break;
-            case 'labels':
-              keepLabels = true;
-              break;
-            case 'defines':
-              keepDefines = true;
-              break;
-            default:
-              break;
-          }
-          continue;
-        }
-        if (leader == '-keep') continue;
-        if (leader == '#' && !keepComments) continue;
-        if (leader == 'alias' && itemSplit.length > 2 && !keepAliases) {
-            aliases[itemSplit[1]] = itemSplit[2].trim();
-            continue;
-        }
-        if (leader == 'define' && itemSplit.length > 2 && !keepDefines){
-            definitions[itemSplit[1]] = itemSplit[2].trim();
-            continue;
-        }
-        if (leader.endsWith(':') && !keepLabels) {
-            // @ts-ignore
-            labels[itemSplit[0].replace(':', '')] = index;
-            continue;
-        }
-        strippedContent.push(item);
-        // @ts-ignore
-        index++
-    }
-
-    return strippedContent
-        .map(item => {
-            var hashed = false;
-            return item.split(' ')
-                .filter(subItem => {
-                    hashed = hashed || (subItem == '#');
-                    return keepComments || !hashed;
-                })
-                .map(subItem => {
-                    const regexp = /^(?<content>.+?)(?:\*(?<repeatCount>\d+))?$/;
-                    const match = regexp.exec(subItem);
-
-                    if (match == null) return;
-                    // @ts-ignore
-                    var content = match.groups.content;
-                    var repeatCount = 0;
-                    // @ts-ignore
-                    if (match.groups.repeatCount != undefined) {
-                        // @ts-ignore
-                        repeatCount = parseInt(match.groups.repeatCount.replace('*', ''));
-                        // @ts-ignore
-                        content.replace(match.groups.repeatCount, '');
-                    }
-
-                    if (definitions[content] != undefined)
-                        content = definitions[content];
-                    if (aliases[content] != undefined)
-                        content = aliases[content];
-                    if (labels[content] != undefined)
-                        content = labels[content];
-
-                    return repeatCount > 0 ? `${content} `.repeat(repeatCount).trim() : content;
-                }).join(' ')
-        })
-        .join('\n');
-}

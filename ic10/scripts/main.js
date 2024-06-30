@@ -3,75 +3,84 @@
 */
 
 const localStorageKey = 'ic10-working';
+const defaultScript = `import process.defaults # You can open these files in the top left for example code and to see the default stripping processes
+import process.labels # Process can be defined inline in your ic10 code and it will be added as a new pass over the scripts lines
+# Processes are a function with the arguments (line: String, state: [IC10Stripper Object])
 
-var editorOutput = CodeMirror.fromTextArea(document.getElementById('code-out'), {
-	firstLineNumber: 0,
-	lineWrapping: true,
-	lineNumbers: true,			// gives a lineNumber gutter
-	mode: 'ic10',			// sets syntax mode
-	theme: 'material',			// select theme
-	autoSize: true,
-	readOnly: 'nocursor',
+alias idx r0 # var idx
+alias device db # var device
+define constant 2
 
-	indentUnit: 4,				// default is 2
-	tabSize: 4,					// default already is 4
-	indentWithTabs: true,		// default is false
-
-	fixedGutter: true,
-	coverGutterNextToScrollbar: true,
-	showCursorWhenSelecting: true,
-	electricChars: true,
-	scrollbarStyle: null
-});
-var editor = CodeMirror.fromTextArea(document.getElementById('code'), {
-  firstLineNumber: 0,
-  lineWrapping: true,
-	lineNumbers: true,			// gives a lineNumber gutter
-	mode: 'ic10',			// sets syntax mode
-	theme: 'material',			// select theme
-  autoSize: true,
+move idx 0 # idx = 0
+ForLoop:
+	add idx idx 1 # idx++
+	blt idx constant ForLoop # if (idx < 2) continue; else break;`;
+var editorOutput;
+var editor;
+$(document).ready(function() {
+	editorOutput = CodeMirror.fromTextArea(document.getElementById('code-out'), {
+		firstLineNumber: 0,
+		lineWrapping: true,
+		lineNumbers: true,			// gives a lineNumber gutter
+		mode: 'ic10',			// sets syntax mode
+		theme: 'material-darker',			// select theme
+		autoSize: true,
+		readOnly: 'nocursor',
 	
-	indentUnit: 4,				// default is 2
-	tabSize: 4,					// default already is 4
-	indentWithTabs: true,		// default is false
+		indentUnit: 4,				// default is 2
+		tabSize: 4,					// default already is 4
+		indentWithTabs: true,		// default is false
 	
-	fixedGutter: true,
-	coverGutterNextToScrollbar: true,
-	showCursorWhenSelecting: true,
-	electricChars: true,
-  scrollbarStyle: null
-});
-function lexing() {
-	const content = editor.getValue();
-	localStorage.setItem(localStorageKey, content);
-	editorOutput.setValue(StripIC10(content));
-	//var tokens = (new IC10Lexer(content)).tokens;
-	//var tokensStripped = IC10Stripper(tokens);
-	//var newContent = IC10Detokenizer
-	//editorOutput.setValue(IC10Stripper((new IC10Lexer()).eatScript(content).map(token => token.DATA).join));
-	editor.lexingTimeoutID = null;
-	const sourceScrollInfo = editor.getScrollInfo();
-	editorOutput.scrollTo(sourceScrollInfo.left, sourceScrollInfo.top);
-};
-editor.lexingTimeoutID = null;
-editor.on('change', (ed, changeObj) => {
-	if (editor.lexingTimeoutID != null)
-		clearTimeout(editor.lexingTimeoutID);
-	editor.lexingTimeoutID = setTimeout(lexing, 250);
-});
-editor.on('keyHandled', (ed, name, event) => {
-	console.log(ed, name, event);
-})
-editor.setValue(localStorage.getItem(localStorageKey) ?? '');
-// editorOutput.setValue(StripIC10(editor.getValue()));
-function syncScroll(sourceEditor, targetEditor) {
-	sourceEditor.on('scroll', () => {
-		const sourceScrollInfo = sourceEditor.getScrollInfo();
-		targetEditor.scrollTo(sourceScrollInfo.left, sourceScrollInfo.top);
+		fixedGutter: true,
+		coverGutterNextToScrollbar: true,
+		showCursorWhenSelecting: true,
+		electricChars: true,
+		scrollbarStyle: null
 	});
-}
-syncScroll(editor, editorOutput);
-syncScroll(editorOutput, editor);
+	editor = CodeMirror.fromTextArea(document.getElementById('code'), {
+	  firstLineNumber: 0,
+	  lineWrapping: true,
+		lineNumbers: true,			// gives a lineNumber gutter
+		mode: 'ic10',			// sets syntax mode
+		theme: 'material-darker',			// select theme
+	  autoSize: true,
+		
+		indentUnit: 4,				// default is 2
+		tabSize: 4,					// default already is 4
+		indentWithTabs: true,		// default is false
+		
+		fixedGutter: true,
+		coverGutterNextToScrollbar: true,
+		showCursorWhenSelecting: true,
+		electricChars: true,
+	  scrollbarStyle: null
+	});
+	async function strip() {
+		const content = editor.getValue();
+		localStorage.setItem(localStorageKey, content);
+		const stripper = new IC10Stripper();
+		editorOutput.setValue(await stripper.process(content));
+		editor.stripTimeoutID = null;
+		const sourceScrollInfo = editor.getScrollInfo();
+		editorOutput.scrollTo(sourceScrollInfo.left, sourceScrollInfo.top);
+	};
+	editor.stripTimeoutID = null;
+	editor.on('change', (ed, changeObj) => {
+		if (editor.stripTimeoutID != null)
+			clearTimeout(editor.stripTimeoutID);
+		editor.stripTimeoutID = setTimeout(strip, 250);
+	});
+	editor.setValue(localStorage.getItem(localStorageKey) ?? '');
+	// editorOutput.setValue(StripIC10(editor.getValue()));
+	function syncScroll(sourceEditor, targetEditor) {
+		sourceEditor.on('scroll', () => {
+			const sourceScrollInfo = sourceEditor.getScrollInfo();
+			targetEditor.scrollTo(sourceScrollInfo.left, sourceScrollInfo.top);
+		});
+	}
+	syncScroll(editor, editorOutput);
+	syncScroll(editorOutput, editor);
+});
 
 $(document).ready(function() {
 	var sizes = localStorage.getItem('split-sizes')
@@ -196,25 +205,49 @@ $(document).ready(function() {
 	  populateFileList();
 })
 
-
-// $('.left-side').toolbar( {
-// 	content: '#left-file-toolbar-options',
-// 	position: 'bottom'
-// } );
-
-// $('.left-side').on('toolbarItemClick', async function(event, button) {
-// 	if (button.id == 'menu-copy') {
-// 		navigator.clipboard.writeText(editorOutput.getValue());	
-// 	} else if (button.id == 'menu-paste') {
-// 		editor.setValue(await navigator.clipboard.readText());	
-// 	} else if (button.id == 'menu-reset') {
-// 		editor.setValue(`-keep space
-// -keep comments
-// -keep alias
-// -keep labels
-// -keep defines
-// `);
-// 	}
-// });
-
-console.log('All loaded a-okay!');
+$(document).ready(async function() {
+	localForage.setItem('process.defaults', `process
+	// Remove starter whitespace
+	if (line != null)
+		line = line.trimStart(); // Trim extra whitespace
+		
+	// Remove comments from lines
+	var commentBegin = false;	
+	if (line != null)
+		line = line.split('').filter(char => !(commentBegin ||= char == '#')).join('');
+		
+	// Remove extra lines
+	if (line != null)
+		line = line.trim().length == 0 ? null : line;
+		
+	// Replace alias and define statements
+	state.aliases ??= [];
+	state.defines ??= [];
+	const AliasPattern = /^alias[ \\t]+([A-Za-z0-9.]+)[ \\t]+((?:r(?:(?:r*(?:1[0-5]|[0-9]))|a))|(?:d(?:[0-5]|b|(?:r+(?:1[0-5]|[0-9])))))\\b/;
+	const DefinePattern = /^define[ \\t]+([A-Za-z0-9.]+)[ \\t]+(.*)(?:[ \\t]|$)+/;
+	var match;
+	if (line != null && (match = line.match(AliasPattern)) != null) {
+		state.aliases[match[1]] = match[2];
+		return null;
+	} else if (line != null && (match = line.match(DefinePattern)) != null) {
+		state.defines[match[1]] = match[2];
+		return null;
+	} else if (line != null)
+		line = line.split(' ').map(arg => state.aliases[arg] != null ? state.aliases[arg] : state.defines[arg] != null ? state.defines[arg] : arg).join(' ');
+		
+	return line;
+end`);
+	localForage.setItem('process.labels', `process
+		state.label ??= [];
+		var match;
+		if (match = line.match(/^[ \\t]*([A-Za-z0-9.]+):\\s?$/)) {
+			state.label[match[1]] = state.line - state.linesSkipped;
+			return null;
+		}
+		return line;
+	end
+	process
+		state.label ??= [];
+		return line.split(' ').map(arg => state.label[arg] != null ? state.label[arg] : arg).join(' ');
+	end`);
+});

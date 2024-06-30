@@ -1,4 +1,5 @@
 @import url("node_modules/codemirror/lib/codemirror.css");
+@import url("node_modules/codemirror/theme/material-darker.css");
 
 *, *:after, *:before {
 	margin: 0;
@@ -39,6 +40,9 @@ html {
 .cm-device {
 	color: #00e200;
 }
+.cm-regdevice {
+	color: #007be0;
+}
 .cm-hash {
 	color: #8B8B8C;
 }
@@ -53,7 +57,7 @@ html {
 }
 .CodeMirror {
 	height: 100%;
-	background-color: #021425;
+	background-color: #04213d !important;
 	color: #DEDEDF;
 }
 .CodeMirror-gutter {
