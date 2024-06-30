@@ -70,7 +70,8 @@ $(document).ready(function() {
 			clearTimeout(editor.stripTimeoutID);
 		editor.stripTimeoutID = setTimeout(strip, 250);
 	});
-	editor.setValue(localStorage.getItem(localStorageKey) ?? '');
+	var initialValue = localStorage.getItem(localStorageKey) ?? '';
+	editor.setValue(initialValue.length == 0 ? defaultScript : initialValue);
 	// editorOutput.setValue(StripIC10(editor.getValue()));
 	function syncScroll(sourceEditor, targetEditor) {
 		sourceEditor.on('scroll', () => {
