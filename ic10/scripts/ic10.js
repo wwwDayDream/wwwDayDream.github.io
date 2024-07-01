@@ -536,7 +536,7 @@ class IC10Stripper {
                     eval(newMethod);
                     state.use(tempFunc);
                 } catch (exce) {
-                    console.log(exce);
+                    // Ignore exceptions lol
                 }
                 return null;
             }
