@@ -12,10 +12,16 @@ alias idx r0 # var idx
 alias device db # var device
 define constant 2
 
-move idx 0 # idx = 0
-ForLoop:
-	add idx idx 1 # idx++
-	blt idx constant ForLoop # if (idx < 2) continue; else break;`;
+# @process.extensions 
+#  for(gt|ge|lt|le|eq|ne) (r?) (r?|num) (r?|num) (str) (r?|num) (label) (label)
+#  for[?] index start end changeCMD amountChangePer call after
+forgt idx constant 0 sub 1 ForFunc ForEnd
+
+ForFunc:
+	s device Setting idx
+	yield
+	j ra
+ForEnd:`;
 var editorOutput;
 var editor;
 $(document).ready(function() {
