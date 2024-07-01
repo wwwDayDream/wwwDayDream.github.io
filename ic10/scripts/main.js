@@ -13,9 +13,9 @@ alias device db # var device
 define constant 2
 
 # @process.extensions 
-#  for(gt|ge|lt|le|eq|ne) (r?) (r?|num) (r?|num) (str) (r?|num) (label) (label)
-#  for[?] index start end changeCMD amountChangePer call after
-forgt idx constant 0 sub 1 ForFunc ForEnd
+#  while(gt|ge|lt|le|eq|ne) (r?) (r?|num) (r?|num) (str) (r?|num) (label) (label)
+#  while[?] index start end changeCMD amountChangePer call after
+whilegt idx constant 0 sub 1 ForFunc ForEnd
 
 ForFunc:
 	s device Setting idx
@@ -214,9 +214,9 @@ $(document).ready(function() {
 })
 
 $(document).ready(async function() {
-	localForage.setItem('process.extensions', `process // Some glorious for patterns :D
-	const ForPattern = /[ \\t]*for([A-Za-z0-9.]+)[ \\t]+(.*)/;
-	const match = line.match(ForPattern);
+	localForage.setItem('process.extensions', `process // Some glorious while patterns :D
+	const WhilePattern = /[ \\t]*while([A-Za-z0-9.]+)[ \\t]+(.*)/;
+	const match = line.match(WhilePattern);
 	var args;
 	if (match && (args = match[2].split(' ')).length >= 7) {
 		const data = {target: args[0],start: args[1], end: args[2], each: args[3], eachArg: args[4], func: args[5], final: args[6]};

@@ -612,7 +612,7 @@ CodeMirror.defineMode('ic10', function(config) {
         TT_ALIAS_A: 'regdevice',
         TT_ALIAS_D: 'num',
         TT_COMMENT: 'comment',
-        TT_MALFORMED: 'error',
+        TT_MALFORMED: null,
         TT_SPACE: null,
         TT_UNKNOWN: null,
     };
