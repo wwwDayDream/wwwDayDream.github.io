@@ -3,7 +3,8 @@
 */
 
 const localStorageKey = 'ic10-working';
-const defaultScript = `import process.defaults # You can open these files in the top left for example code and to see the default stripping processes
+const defaultScript = `import process.extensions # The import preprocessor will import files saved via the top left button.
+import process.defaults # You can open these files in the top left for example code and to see the default stripping processes
 import process.labels # Process can be defined inline in your ic10 code and it will be added as a new pass over the scripts lines
 # Processes are a function with the arguments (line: String, state: [IC10Stripper Object])
 
@@ -207,6 +208,16 @@ $(document).ready(function() {
 })
 
 $(document).ready(async function() {
+	localForage.setItem('process.extensions', `process // Some glorious for patterns :D
+	const ForPattern = /[ \\t]*for([A-Za-z0-9.]+)[ \\t]+(.*)/;
+	const match = line.match(ForPattern);
+	var args;
+	if (match && (args = match[2].split(' ')).length >= 7) {
+		const data = {target: args[0],start: args[1], end: args[2], each: args[3], eachArg: args[4], func: args[5], final: args[6]};
+		return \`move \${data.target} \${data.start}\njal \${data.func}\n\${data.each} \${data.target} \${data.target} \${data.eachArg}\nbr\${match[1]} \${data.target} \${data.end} -2\nj \${data.final}\`;
+	}
+	return line;
+end`)
 	localForage.setItem('process.defaults', `process
 	// Remove starter whitespace
 	if (line != null)
@@ -239,16 +250,16 @@ $(document).ready(async function() {
 	return line;
 end`);
 	localForage.setItem('process.labels', `process
-		state.label ??= [];
-		var match;
-		if (match = line.match(/^[ \\t]*([A-Za-z0-9.]+):\\s?$/)) {
-			state.label[match[1]] = state.line - state.linesSkipped;
-			return null;
-		}
-		return line;
-	end
-	process
-		state.label ??= [];
-		return line.split(' ').map(arg => state.label[arg] != null ? state.label[arg] : arg).join(' ');
-	end`);
+	state.label ??= [];
+	var match;
+	if (match = line.match(/^[ \\t]*([A-Za-z0-9.]+):\\s?$/)) {
+		state.label[match[1]] = state.line - state.linesSkipped;
+		return null;
+	}
+	return line;
+end
+process
+	state.label ??= [];
+	return line.split(' ').map(arg => state.label[arg] != null ? state.label[arg] : arg).join(' ');
+end`);
 });
