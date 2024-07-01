@@ -57,11 +57,11 @@ html {
 }
 .CodeMirror {
 	height: 100%;
-	background-color: #04213d !important;
+	background-color: #001223 !important;
 	color: #DEDEDF;
 }
 .CodeMirror-gutter {
-	background-color: #001223;
+	background-color: #04213d !important;
 	color: #606161;
 }
 /* ----------
