@@ -1,7 +1,6 @@
 const UpdateReady = {
     CONSTANTS: [ 'nan','pinf','ninf','pi','deg2rad','rad2deg','epsilon' ],
-    BATCHMODES: [ 'Average','Sum','Minimum','Maximum' ],
-    REAGENTMODES: [ 'Contents','Required','Recipe' ],
+    LOGICTYPES: [ 'ChargeRatio','Class','Damage','Efficiency','Growth','Health','Mature','MaxQuantity','OccupantHash','Occupied','Quantity','Seeding','SortingClass','Activate','AirRelease','Bpm','Charge','ClearMemory','CollectableGoods','Color','Combustion','CombustionInput','CombustionLimiter','CombustionOutput','CombustionOutput2','CompletionRatio','ElevatorLevel','ElevatorSpeed','Error','ExportCount','Filtration','Flush','ForceWrite','Fuel','Harvest','Horizontal','Idle','ImportCount','InterrogationProgress','LineNumber','Lock','Maximum','MineablesInQueue','MineablesInVicinity','Minimum','MinimumWattsToContact','Mode','NextWeatherEventTime','On','Open','Output','Plant','PositionX','PositionY','PositionZ','Power','PowerActual','PowerGeneration','PowerPotential','PowerRequired','PrefabHash','Pressure','PressureAir','PressureExternal','PressureInput','PressureInternal','PressureOutput','PressureOutput2','PressureSetting','PressureWaste','Ratio','RatioCarbonDioxide','RatioCarbonDioxideInput','RatioCarbonDioxideOutput','RatioCarbonDioxideOutput2','RatioLiquidCarbonDioxide','RatioLiquidNitrogen','RatioLiquidNitrousOxide','RatioLiquidOxygen','RatioLiquidPollutant','RatioLiquidVolatiles','RatioNitrogen','RatioNitrogenInput','RatioNitrogenOutput','RatioNitrogenOutput2','RatioNitrousOxide','RatioNitrousOxideInput','RatioNitrousOxideOutput','RatioNitrousOxideOutput2','RatioOxygen','RatioOxygenInput','RatioOxygenOutput','RatioOxygenOutput2','RatioPollutant','RatioPollutantInput','RatioPollutantOutput','RatioPollutantOutput2','RatioSteam','RatioVolatiles','RatioVolatilesInput','RatioVolatilesOutput','RatioVolatilesOutput2','RatioWater','RatioWaterInput','RatioWaterOutput','RatioWaterOutput2','Reagents','RecipeHash','RequestHash','RequiredPower','ReturnFuelCost','Rpm','Setting','SettingOutput','SignalID','SignalStrength','SizeX','SizeZ','SolarAngle','SolarIrradiance','SoundAlert','Stress','TargetPadIndex','TargetX','TargetY','TargetZ','Temperature','TemperatureExternal','TemperatureInput','TemperatureOutput','TemperatureOutput2','TemperatureSetting','Throttle','Time','TotalMoles','TotalMolesInput','TotalMolesOutput','TotalMolesOutput2','VelocityMagnitude','VelocityRelativeX','VelocityRelativeY','VelocityRelativeZ','Vertical','Volume','VolumeOfLiquid','WattsReachingContact','Contents','Recipe','Required','Channel0','Channel1','Channel2','Channel3','Channel4','Channel5','Channel6','Channel7','Average','Sum' ],
     STATEMENTS: [
         {ident: 'abs', 
                     args: [ ['r?'], ['r?','num'] ]},
@@ -319,8 +318,7 @@ class IC10Lexer {
         INT_DEC: /([-]?[0-9]+)/,
         INT_HEX: /\$((?:(?:_(?=_*(?:[0-9]|[A-F]|[a-f])))|(?:[0-9]|[A-F]|[a-f]))(?:[0-9]|[A-F]|[a-f]|_)*)/,
         INT_BIN: /%((?:(?:_(?=_*[01]))|(?:[01]))[01_]*)/,
-        BATCH_MODE: new RegExp(`^(${UpdateReady.BATCHMODES.join('|')})$`),
-        REAG_MODE: new RegExp(`^(${UpdateReady.REAGENTMODES.join('|')})$`),
+        LOGIC_TYPE: new RegExp(`^(${UpdateReady.LOGICTYPES.join('|')})$`),
         ALIAS: /([A-Za-z0-9.]+)/
     }
     STATES = {
@@ -353,10 +351,8 @@ class IC10Lexer {
                     this.yield('INT_HEX');
                 else if (this.REGEX.INT_BIN.matchesAll(this.current))
                     this.yield('INT_BIN');
-                else if (this.REGEX.BATCH_MODE.matchesAll(this.current))
-                    this.yield('BATCH_MODE');
-                else if (this.REGEX.REAG_MODE.matchesAll(this.current))
-                    this.yield('REAG_MODE');
+                else if (this.REGEX.LOGIC_TYPE.matchesAll(this.current))
+                    this.yield('LOGIC_TYPE');
                 else if (this.REGEX.ALIAS.matchesAll(this.current))
                     this.yield('ALIAS');
                 else
@@ -606,8 +602,7 @@ CodeMirror.defineMode('ic10', function(config) {
         TT_INT_DEC: 'num',
         TT_INT_HEX: 'num',
         TT_INT_BIN: 'num',
-        TT_BATCH_MODE: 'logic-type',
-        TT_REAG_MODE: 'logic-type',
+        TT_LOGIC_TYPE: 'logic-type',
         TT_ALIAS: 'header',
         TT_ALIAS_A: 'regdevice',
         TT_ALIAS_D: 'num',
