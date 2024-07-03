@@ -51,12 +51,12 @@ $(document).ready(function() {
 		scrollbarStyle: null
 	});
 	editor = CodeMirror.fromTextArea(document.getElementById('code'), {
-	  firstLineNumber: 0,
-	  lineWrapping: true,
+		firstLineNumber: 0,
+		lineWrapping: true,
 		lineNumbers: true,			// gives a lineNumber gutter
 		mode: 'ic10',			// sets syntax mode
 		theme: 'material-darker',			// select theme
-	  autoSize: true,
+	  	autoSize: true,
 		
 		indentUnit: 4,				// default is 2
 		tabSize: 4,					// default already is 4
@@ -66,7 +66,7 @@ $(document).ready(function() {
 		coverGutterNextToScrollbar: true,
 		showCursorWhenSelecting: true,
 		electricChars: true,
-	  scrollbarStyle: null
+	  	scrollbarStyle: null
 	});
 	async function strip() {
 		const content = editor.getValue();
@@ -82,6 +82,40 @@ $(document).ready(function() {
 		if (editor.stripTimeoutID != null)
 			clearTimeout(editor.stripTimeoutID);
 		editor.stripTimeoutID = setTimeout(strip, 250);
+	});
+	editor.on('renderLine', (instance, line, element) => {
+		var foundInstruction = null;
+		var lastToken = null;
+		var argNumber = 0;
+		for (const child of element.children[0].children) {
+			if (!foundInstruction && child.classList.contains('cm-bad-instruction') && element.children[0].children.length == 1) {
+				var badMatch = UpdateReady.STATEMENTS.find(state => state.ident.startsWith(child.innerHTML));
+				if (badMatch)
+					InjectSuggestion(badMatch.ident.replace(child.innerHTML, ''));
+			}
+			if (foundInstruction) {
+				var token = child.classList[0].split('-')[1];
+				if ((token != 'hash' || lastToken != 'hash')) {
+					lastToken = token
+					argNumber++;
+				}
+			}
+			if (!foundInstruction && child.classList.contains('cm-instruction'))
+				foundInstruction = UpdateReady.STATEMENTS.find(st => st.ident == child.innerHTML);
+		}
+		if (foundInstruction != null && foundInstruction.args != null && foundInstruction.args.length > argNumber) {
+			console.log(foundInstruction);
+			let args = foundInstruction.args[argNumber];
+			InjectSuggestion(`(${args.length > 1 ? args.join('|') : args[0]})`);
+		}
+		
+		return;
+		function InjectSuggestion(content) {
+			var newSpan = document.createElement('span');
+			newSpan.innerHTML = content;
+			newSpan.classList = [ 'cm-comment' ]
+			element.children[0].append(newSpan);
+		}
 	});
 	var initialValue = localStorage.getItem(localStorageKey) ?? '';
 	editor.setValue(initialValue.length == 0 ? defaultScript : initialValue);

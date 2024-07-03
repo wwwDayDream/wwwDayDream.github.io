@@ -590,6 +590,7 @@ CodeMirror.defineMode('ic10', function(config) {
     var jsMode = CodeMirror.getMode(config, "javascript");
     const tokenTypes = {
         TT_INSTRUCTION: 'instruction',
+        TT_INSTRUCTION_ERR: 'bad-instruction',
         TT_LABEL: 'label',
         TT_REGISTER: 'register',
         TT_STACKPOINTER: 'register',
@@ -640,8 +641,12 @@ CodeMirror.defineMode('ic10', function(config) {
                     token = state.lexer.eatChar(char, stream.peek());
 
                 if (token != null) {
-                    if (token.ID == 'TT_INSTRUCTION')
+                    if (token.ID == 'TT_INSTRUCTION') {
                         state.lastInstr = token;
+                        const pattern = new RegExp(`^(${UpdateReady.STATEMENTS.map(state => state.ident).join('|')})$`, 'i');
+                        if (!token.DATA.match(pattern))
+                            token.ID = 'TT_INSTRUCTION_ERR';
+                    }
                     if (token.ID == 'TT_LABEL')
                         state.labels.push(token.DATA);
                     if (token.ID == 'TT_ALIAS'){
