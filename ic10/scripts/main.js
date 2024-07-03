@@ -32,7 +32,6 @@ $(document).ready(function() {
 		mode: 'ic10',			// sets syntax mode
 		theme: 'material-darker',			// select theme
 		autoSize: true,
-		readOnly: 'nocursor',
 	
 		indentUnit: 4,				// default is 2
 		tabSize: 4,					// default already is 4

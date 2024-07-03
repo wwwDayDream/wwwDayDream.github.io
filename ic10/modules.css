@@ -68,6 +68,7 @@ html {
 	CODE BLOCK
 ---------- */
 .container {
+	background-color: #001020 !important;
 	height: 100%;
     display: flex;
 }
@@ -76,4 +77,12 @@ html {
 }
 .code-container-out {
   float: right;
+}
+
+.gutter {
+	background-color: #001020 !important;
+}
+
+#menu {
+	background-color: #001020 !important;
 }
