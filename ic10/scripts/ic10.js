@@ -653,11 +653,11 @@ CodeMirror.defineMode('ic10', function(config) {
                             state.defines.push(token.DATA);
                             token.ID = 'TT_ALIAS_D'
                         }
-                        else if (state.aliases.findIndex(i => i == token.DATA) >= 0)
+                        else if (state.aliases.findIndex(i => i == token.DATA) >= 0 || aliasLookAhead(token.DATA))
                             token.ID = 'TT_ALIAS_A'
                         else if (state.defines.findIndex(i => i == token.DATA) >= 0)
                             token.ID = 'TT_ALIAS_D'
-                        if (state.labels.findIndex(i => i == token.DATA) >= 0 || lookAhead(token.DATA))
+                        if (state.labels.findIndex(i => i == token.DATA) >= 0 || labelLookAhead(token.DATA))
                             token.ID = 'TT_LABEL';
                     }
                 }
@@ -675,7 +675,7 @@ CodeMirror.defineMode('ic10', function(config) {
                 state.tokens.push(token);
             return token == null ? null : tokenTypes[token.ID];
 
-            function lookAhead(labelName) {
+            function labelLookAhead(labelName) {
                 var line = "";
                 var idx = 0;
                 do {
@@ -683,6 +683,17 @@ CodeMirror.defineMode('ic10', function(config) {
                     line = stream.lookAhead(idx);
                     if (line == null) break;
                     if (line.trimStart().startsWith(labelName + ':')) return true;
+                } while (line != null)
+            }
+            function aliasLookAhead(aliasName) {
+                var line = "";
+                var idx = 0;
+                do {
+                    idx++;
+                    line = stream.lookAhead(idx);
+                    if (line == null) break;
+                    const match = line.match(/[ \t*]alias[ \t]+([^ \t]+)/);
+                    if (match && match[1] == aliasName) return true;
                 } while (line != null)
             }
         }
