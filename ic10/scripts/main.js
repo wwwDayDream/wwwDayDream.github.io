@@ -240,7 +240,7 @@ end`)
 		if (str.length == str.replace('"', '').length - 1) {
 			inQuotes = !inQuotes;
 		}
-		if (inQuotes) return true;
+		if (inQuotes) return false;
 		return str.length > 0;
 	}).join(' ');
 end`);
