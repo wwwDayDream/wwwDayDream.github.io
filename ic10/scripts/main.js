@@ -104,7 +104,6 @@ $(document).ready(function() {
 				foundInstruction = UpdateReady.STATEMENTS.find(st => st.ident == child.innerHTML);
 		}
 		if (foundInstruction != null && foundInstruction.args != null && foundInstruction.args.length > argNumber) {
-			console.log(foundInstruction);
 			let args = foundInstruction.args[argNumber];
 			InjectSuggestion(`(${args.length > 1 ? args.join('|') : args[0]})`);
 		}
