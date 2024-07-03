@@ -3,10 +3,17 @@
 */
 
 const localStorageKey = 'ic10-working';
-const defaultScript = `import process.extensions # The import preprocessor will import files saved via the top left button.
-import process.defaults # You can open these files in the top left for example code and to see the default stripping processes
-import process.labels # Process can be defined inline in your ic10 code and it will be added as a new pass over the scripts lines
+const defaultScript = `# The import preprocessor will import files saved via the top left button.
+# You can open these files in the top left for example code and to see the default stripping processes
+# Process can be defined inline in your ic10 code and it will be added as a new pass over the scripts lines
 # Processes are a function with the arguments (line: String, state: [IC10Stripper Object])
+import process.extensions
+import process.whitespace
+import process.comments
+import process.lines
+import process.aliases
+import process.defines
+import process.labels
 
 alias idx r0 # var idx
 alias device db # var device
@@ -223,30 +230,52 @@ $(document).ready(async function() {
 	}
 	return line;
 end`)
-	localForage.setItem('process.defaults', `process
+	localForage.setItem('process.whitespace', `process
 	// Remove starter whitespace
 	if (line != null)
 		line = line.trimStart(); // Trim extra whitespace
-		
+
+	var inQuotes = false;
+	return line.split(' ').filter(str => {
+		if (str.length == str.replace('"', '').length - 1) {
+			inQuotes = !inQuotes;
+		}
+		if (inQuotes) return true;
+		return str.length > 0;
+	}).join(' ');
+end`);
+	localForage.setItem('process.comments', `process
 	// Remove comments from lines
 	var commentBegin = false;	
 	if (line != null)
 		line = line.split('').filter(char => !(commentBegin ||= char == '#')).join('');
-		
+	return line;
+end`);
+	localForage.setItem('process.lines', `process
 	// Remove extra lines
 	if (line != null)
 		line = line.trim().length == 0 ? null : line;
-		
-	// Replace alias and define statements
+	return line;
+end`);
+	localForage.setItem('process.aliases', `process
 	state.aliases ??= [];
-	state.defines ??= [];
 	const AliasPattern = /^alias[ \\t]+([A-Za-z0-9.]+)[ \\t]+((?:r(?:(?:r*(?:1[0-5]|[0-9]))|a))|(?:d(?:[0-5]|b|(?:r+(?:1[0-5]|[0-9])))))\\b/;
-	const DefinePattern = /^define[ \\t]+([A-Za-z0-9.]+)[ \\t]+(.*)(?:[ \\t]|$)+/;
 	var match;
 	if (line != null && (match = line.match(AliasPattern)) != null) {
 		state.aliases[match[1]] = match[2];
 		return null;
-	} else if (line != null && (match = line.match(DefinePattern)) != null) {
+	} else if (line != null)
+		line = line.split(' ').map(arg => state.aliases[arg] != null ? state.aliases[arg] : arg).join(' ');
+		
+	return line;
+end`);
+	localForage.setItem('process.defines', `process
+		
+	// Replace define statements
+	state.defines ??= [];
+	const DefinePattern = /^define[ \\t]+([A-Za-z0-9.]+)[ \\t]+(.*)(?:[ \\t]|$)+/;
+	var match;
+	if (line != null && (match = line.match(DefinePattern)) != null) {
 		state.defines[match[1]] = match[2];
 		return null;
 	} else if (line != null)
