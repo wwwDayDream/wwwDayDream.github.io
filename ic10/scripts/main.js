@@ -279,7 +279,7 @@ end`);
 		state.defines[match[1]] = match[2];
 		return null;
 	} else if (line != null)
-		line = line.split(' ').map(arg => state.aliases[arg] != null ? state.aliases[arg] : state.defines[arg] != null ? state.defines[arg] : arg).join(' ');
+		line = line.split(' ').map(arg => state.defines[arg] != null ? state.defines[arg] : arg).join(' ');
 		
 	return line;
 end`);
