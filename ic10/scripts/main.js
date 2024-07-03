@@ -294,6 +294,6 @@ end`);
 end
 process
 	state.label ??= [];
-	return line.split(' ').map(arg => typeof(state.label[arg]) == 'string' ? state.label[arg] : arg).join(' ');
+	return line.split(' ').map(arg => typeof(state.label[arg]) == 'number' ? state.label[arg] : arg).join(' ');
 end`);
 });
