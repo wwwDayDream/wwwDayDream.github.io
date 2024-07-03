@@ -265,7 +265,7 @@ end`);
 		state.aliases[match[1]] = match[2];
 		return null;
 	} else if (line != null)
-		line = line.split(' ').map(arg => state.aliases[arg] != null ? state.aliases[arg] : arg).join(' ');
+		line = line.split(' ').map(arg => typeof(state.aliases[arg]) == 'string' ? state.aliases[arg] : arg).join(' ');
 		
 	return line;
 end`);
@@ -279,7 +279,7 @@ end`);
 		state.defines[match[1]] = match[2];
 		return null;
 	} else if (line != null)
-		line = line.split(' ').map(arg => state.defines[arg] != null ? state.defines[arg] : arg).join(' ');
+		line = line.split(' ').map(arg => typeof(state.defines[arg]) == 'string' ? state.defines[arg] : arg).join(' ');
 		
 	return line;
 end`);
@@ -294,6 +294,6 @@ end`);
 end
 process
 	state.label ??= [];
-	return line.split(' ').map(arg => state.label[arg] != null ? state.label[arg] : arg).join(' ');
+	return line.split(' ').map(arg => typeof(state.label[arg]) == 'string' ? state.label[arg] : arg).join(' ');
 end`);
 });
