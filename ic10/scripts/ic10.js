@@ -692,7 +692,7 @@ CodeMirror.defineMode('ic10', function(config) {
                     idx++;
                     line = stream.lookAhead(idx);
                     if (line == null) break;
-                    const match = line.match(/[ \t*]alias[ \t]+([^ \t]+)/);
+                    const match = line.match(/[ \t*]*alias[ \t]+([^ \t]+)/);
                     if (match && match[1] == aliasName) return true;
                 } while (line != null)
             }
