@@ -10,10 +10,6 @@ window.onload = function() {
 		return;
 	}
 	window.location.href = "vintagestoryjoin://" + ipPort;
-	console.log(ipPort);
-	setTimeout(() => {
-		window.close();
-	}, 100);
 };
 function generateAndCopyLink() {
 	const ip = document.getElementById('ip').value;
