@@ -52,7 +52,7 @@
   </style>
 </head>
 <body>
-  <div class="form-container" style="visibility: hidden">
+  <div class="form-container" id="hidden-form" style="visibility: hidden">
       <label>
           IP Address:
           <input type="text" id="ip" placeholder="Enter IP Address" required>
@@ -61,7 +61,7 @@
           Port:
           <input type="number" id="port" placeholder="Enter Port" required>
       </label>
-      <button onclick="generateAndCopyLink()">Generate and Copy Link</button>
+      <button onclick="generateAndCopyLink()">Copy Link</button>
   </div>
   <script src="./scripts/main.js"></script>
 </body>

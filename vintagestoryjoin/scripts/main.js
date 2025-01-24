@@ -6,7 +6,7 @@ window.onload = function() {
 	var ipPort = ip + ":" + port;
 
 	if (!ip || !port) {
-		document.getElementsByClassName("form-container").style.visibility = "visible"
+		document.getElementById("hidden-form").style.visibility = "visible"
 		return;
 	}
 	window.location.href = "vintagestoryjoin://" + ipPort;
