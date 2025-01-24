@@ -9,7 +9,8 @@ window.onload = function() {
 		document.getElementById("hidden-form").style.visibility = "visible"
 		return;
 	}
-	window.location.href = "vintagestoryjoin://" + ipPort.trim();
+	window.location.href = "vintagestoryjoin://" + ipPort;
+	console.log(ipPort);
 	setTimeout(() => {
 		window.close();
 	}, 100);
