@@ -3,4 +3,7 @@ window.onload = function() {
 	var url = new URL(current);
 	var ipPort = url.searchParams.get("ip") + ":" + url.searchParams.get("port");
 	window.location.replace("vintagestoryjoin://" + ipPort);
+	setTimeout(() => {
+		window.close();
+	}, 100);
 };
