@@ -1,10 +1,13 @@
 window.onload = function() {
 	var current = window.location.href;
 	var url = new URL(current);
-	var ipPort = url.searchParams.get("ip") + ":" + url.searchParams.get("port");
+	var ip = url.searchParams.get("ip");
+	var port = url.searchParams.get("port");
+	var ipPort = ip + ":" + port;
 
-	if (ipPort.length <= 1) {
+	if (!ip || !port) {
 		document.getElementsByClassName("form-container").style.visibility = "visible"
+		return;
 	}
 	window.location.href = "vintagestoryjoin://" + ipPort;
 	setTimeout(() => {
