@@ -1,9 +1,9 @@
 window.onload = function() {
 	var current = window.location.href;
 	var url = new URL(current);
-	var modId = decodeURIComponent(url.searchParams.get("id"));
-	var modVersion = decodeURIComponent(url.searchParams.get("version"));
-	var modLaunchString = modId + "@" + modVersion;
+	var modId = url.searchParams.get("id");
+	var modVersion = url.searchParams.get("version");
+	var modLaunchString = decodeURIComponent(modId) + "@" + decodeURIComponent(modVersion);
 
 	if (!modId || !modVersion) {
 		document.getElementById("hidden-form").style.visibility = "visible"
