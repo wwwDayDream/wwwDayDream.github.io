@@ -25,8 +25,8 @@ function generateAndCopyLink() {
 		alert('Please enter a valid 1-click link.')
 		return;
 	}
-	var modId = [0]
-	var modVersion = withoutProtocol.split("@")[1]
+	var modId = split[0]
+	var modVersion = split[1]
 
 	const link = `https://wwwdaydream.github.io/vintagestorymodinstall?id=${encodeURIComponent(modId)}&version=${encodeURIComponent(modVersion)}`;
 	navigator.clipboard.writeText(link).then(() => {
