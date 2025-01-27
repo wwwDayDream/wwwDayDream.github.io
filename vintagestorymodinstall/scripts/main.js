@@ -12,7 +12,7 @@ window.onload = function() {
 	window.location.href = "vintagestorymodinstall://" + modLaunchString;
 };
 function generateAndCopyLink() {
-	const id = document.getElementById('ip').value;
+	const id = document.getElementById('id').value;
 
 	if (!id) {
 		alert('Please enter a 1-click link.');
