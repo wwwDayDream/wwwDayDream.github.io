@@ -11,7 +11,7 @@ window.onload = function() {
 	}
 	window.location.href = "vintagestorymodinstall://" + modLaunchString;
 };
-function generateAndCopyLink() {
+function generateAndCopyLink(button) {
 	const id = document.getElementById('id').value;
 	const notification = document.getElementById('notification');
 
@@ -43,7 +43,7 @@ function generateAndCopyLink() {
 		// Hide notification after a short delay
 		setTimeout(() => {
 			notification.classList.remove('visible');
-		}, 2000);
+		}, 1200);
 	}).catch(err => {
 		console.error('Failed to copy:', err);
 	});
