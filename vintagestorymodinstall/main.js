@@ -1,8 +1,8 @@
 window.onload = function() {
 	var current = window.location.href;
 	var url = new URL(current);
-	var modId = url.searchParams.get("id");
-	var modVersion = url.searchParams.get("version");
+	var modId = decodeURIComponent(url.searchParams.get("id"));
+	var modVersion = decodeURIComponent(url.searchParams.get("version"));
 	var modLaunchString = modId + "@" + modVersion;
 
 	if (!modId || !modVersion) {
