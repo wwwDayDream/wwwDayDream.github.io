@@ -13,6 +13,7 @@ window.onload = function() {
 };
 function generateAndCopyLink() {
 	const id = document.getElementById('id').value;
+	const notification = document.getElementById('notification');
 
 	if (!id) {
 		alert('Please enter a 1-click link.');
@@ -30,6 +31,19 @@ function generateAndCopyLink() {
 
 	const link = `https://wwwdaydream.github.io/vintagestorymodinstall?id=${encodeURIComponent(modId)}&version=${encodeURIComponent(modVersion)}`;
 	navigator.clipboard.writeText(link).then(() => {
+		// Show notification
+		notification.classList.add('visible');
+
+		// Add animation to the button
+		button.style.transform = 'scale(1.1)';
+		setTimeout(() => {
+			button.style.transform = 'scale(1)';
+		}, 150);
+
+		// Hide notification after a short delay
+		setTimeout(() => {
+			notification.classList.remove('visible');
+		}, 2000);
 	}).catch(err => {
 		console.error('Failed to copy:', err);
 	});

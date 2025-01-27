@@ -1,15 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vintage Story Redirect</title>
-  <!-- 
-  <link rel='stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/codemirror/5.13.4/codemirror.css'>
-  <link rel='stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/codemirror/5.13.4/theme/material.css'>
-  <link rel="stylesheet" href="./style.css"> -->
-  <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.3/themes/base/jquery-ui.css">
-  <title>IP:Port Form</title>
+  <title>Copy Link with Feedback</title>
   <style>
       body {
           display: flex;
@@ -44,10 +38,26 @@
           border: none;
           border-radius: 4px;
           cursor: pointer;
-          transition: background-color 0.2s;
+          transition: background-color 0.2s, transform 0.1s;
       }
       button:hover {
           background-color: #0056b3;
+      }
+      button:active {
+          transform: scale(0.95);
+      }
+      .notification {
+          margin-top: 1rem;
+          padding: 0.5rem 1rem;
+          background-color: #28a745;
+          color: white;
+          border-radius: 4px;
+          font-size: 0.9rem;
+          opacity: 0;
+          transition: opacity 0.3s;
+      }
+      .notification.visible {
+          opacity: 1;
       }
   </style>
 </head>
@@ -57,8 +67,8 @@
           Install URI:
           <input type="text" id="id" placeholder="Enter 1-click link" required>
       </label>
-      <button onclick="generateAndCopyLink()">Copy Link</button>
+      <button onclick="generateAndCopyLink(this)">Copy Link</button>
+      <div id="notification" class="notification">Copied to clipboard!</div>
   </div>
-  <script src="./scripts/main.js"></script>
 </body>
 </html>
