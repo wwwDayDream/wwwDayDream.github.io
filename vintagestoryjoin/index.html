@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vintage Story Redirect</title>
+  <!-- 
+  <link rel='stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/codemirror/5.13.4/codemirror.css'>
+  <link rel='stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/codemirror/5.13.4/theme/material.css'>
+  <link rel="stylesheet" href="./style.css"> -->
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.3/themes/base/jquery-ui.css">
+  <title>IP:Port Form</title>
+  <style>
+      body {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+          margin: 0;
+          font-family: Arial, sans-serif;
+      }
+      .form-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 1rem;
+          padding: 2rem;
+          border: 1px solid #ccc;
+          border-radius: 8px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      input {
+          padding: 0.5rem;
+          font-size: 1rem;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          width: 100%;
+      }
+      button {
+          padding: 0.5rem 1rem;
+          font-size: 1rem;
+          background-color: #007BFF;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: background-color 0.2s;
+      }
+      button:hover {
+          background-color: #0056b3;
+      }
+  </style>
+</head>
+<body>
+  <div class="form-container" id="hidden-form" style="visibility: hidden">
+      <label>
+          IP Address:
+          <input type="text" id="ip" placeholder="Enter IP Address" required>
+      </label>
+      <label>
+          Port:
+          <input type="number" id="port" placeholder="Enter Port" required>
+      </label>
+      <button onclick="generateAndCopyLink()">Copy Link</button>
+  </div>
+  <script src="./scripts/main.js"></script>
+</body>
+</html>
