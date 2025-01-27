@@ -19,7 +19,7 @@ function generateAndCopyLink() {
 		return;
 	}
 
-	const withoutProtocol = id.replace("vintagestorymodinstall://");
+	const withoutProtocol = id.replace("vintagestorymodinstall://", "");
 	const split = withoutProtocol.split("@");
 	if (split.length == 1) {
 		alert('Please enter a valid 1-click link.')
