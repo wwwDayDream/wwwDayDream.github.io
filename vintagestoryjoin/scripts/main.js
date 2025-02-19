@@ -1,27 +1,26 @@
 window.onload = function() {
 	var current = window.location.href;
 	var url = new URL(current);
-	var ip = url.searchParams.get("ip");
 	var port = url.searchParams.get("port");
-	var ipPort = ip + ":" + port;
+	var hostname = url.searchParams.get("host");
 
-	if (!ip || !port) {
+	if (!hostname) {
 		document.getElementById("hidden-form").style.visibility = "visible"
 		return;
 	}
-	window.location.href = "vintagestoryjoin://" + ipPort;
+	window.location.href = "vintagestoryjoin://" + hostname + (!port ? "" : ":" + port);
 };
 function generateAndCopyLink(button) {
-	const ip = document.getElementById('ip').value;
+	const host = document.getElementById('host').value;
 	const port = document.getElementById('port').value;
 	const notification = document.getElementById('notification');
 
-	if (!ip || !port) {
-		alert('Please enter both IP and Port.');
+	if (!host) {
+		alert('Please enter at least a host.');
 		return;
 	}
 
-	const link = `https://wwwdaydream.github.io/vintagestoryjoin?ip=${ip}&port=${port}`;
+	const link = `https://wwwdaydream.github.io/vintagestoryjoin?host=${ip}&port=${port}`;
 	navigator.clipboard.writeText(link).then(() => {
 		// Show notification
 		notification.classList.add('visible');
