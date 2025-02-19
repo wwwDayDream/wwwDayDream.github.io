@@ -20,7 +20,7 @@ function generateAndCopyLink(button) {
 		return;
 	}
 
-	const link = `https://wwwdaydream.github.io/vintagestoryjoin?host=${host}` + length(port) > 0 ? `&port=${port}` : "";
+	const link = `https://wwwdaydream.github.io/vintagestoryjoin?host=${host}` + port.length > 0 ? `&port=${port}` : "";
 	navigator.clipboard.writeText(link).then(() => {
 		// Show notification
 		notification.classList.add('visible');
